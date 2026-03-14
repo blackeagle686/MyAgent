@@ -58,34 +58,34 @@ Perfect for building:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                   Web Interface Layer                        │
-│         (Chat Page, Dashboard, Real-time Updates)            │
+│                   Web Interface Layer                       │
+│         (Chat Page, Dashboard, Real-time Updates)           │
 └────────────────────┬────────────────────────────────────────┘
                      │
 ┌────────────────────▼────────────────────────────────────────┐
-│                 Agent Core (BrainAgent)                      │
-│    ┌──────────────┐  ┌──────────────┐  ┌───────────────┐   │
-│    │   Planner    │  │   Memory     │  │   Loop Ctrl   │   │
-│    │ (Reasoning)  │  │ (Episodic)   │  │ (ReAct Cycle) │   │
-│    └──────────────┘  └──────────────┘  └───────────────┘   │
+│                 Agent Core (BrainAgent)                     │
+│    ┌──────────────┐  ┌──────────────┐  ┌───────────────┐    │
+│    │   Planner    │  │   Memory     │  │   Loop Ctrl   │    │
+│    │ (Reasoning)  │  │ (Episodic)   │  │ (ReAct Cycle) │    │
+│    └──────────────┘  └──────────────┘  └───────────────┘    │
 └────────────────────┬────────────────────────────────────────┘
                      │
 ┌────────────────────▼────────────────────────────────────────┐
-│              AgentActor (Execution Engine)                   │
-│  ┌─────────────┐  ┌───────────────┐  ┌─────────────────┐  │
-│  │   Parser    │→ │  Validator    │→ │   Executor      │  │
-│  │ (JSON Ext)  │  │ (5-pt Check)  │  │ (Sandboxed)     │  │
-│  └─────────────┘  └───────────────┘  └─────────────────┘  │
+│              AgentActor (Execution Engine)                  │
+│  ┌─────────────┐  ┌───────────────┐  ┌─────────────────┐    │
+│  │   Parser    │→ │  Validator    │→ │   Executor      │    │
+│  │ (JSON Ext)  │  │ (5-pt Check)  │  │ (Sandboxed)     │    │
+│  └─────────────┘  └───────────────┘  └─────────────────┘    │
 └────────────────────┬────────────────────────────────────────┘
                      │
 ┌────────────────────▼────────────────────────────────────────┐
-│                  Tool Layer                                  │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
-│  │ File System  │  │ Python REPL  │  │  Web Search      │  │
-│  └──────────────┘  └──────────────┘  └──────────────────┘  │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
-│  │ Vector DB    │  │  Task Mgr    │  │ Custom Tools...  │  │
-│  └──────────────┘  └──────────────┘  └──────────────────┘  │
+│                  Tool Layer                                 │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐   │
+│  │ File System  │  │ Python REPL  │  │  Web Search      │   │
+│  └──────────────┘  └──────────────┘  └──────────────────┘   │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐   │
+│  │ Vector DB    │  │  Task Mgr    │  │ Custom Tools...  │   │
+│  └──────────────┘  └──────────────┘  └──────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -119,6 +119,7 @@ python -c "from core.agent import AgentActor; print('✓ Installation successful
 
 1. **Create `.env` file** in project root:
 ```env
+### example: 
 LLM_API_KEY=your_api_key_here
 LLM_MODEL=gpt-4-turbo
 VECTOR_DB_URL=http://localhost:6333
@@ -412,15 +413,14 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 ## 👤 Author
 
-**Your Name**
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Email: your.email@example.com
+**Mohammed Alaa**
+- GitHub: [@yourusername](https://github.com/blackeagle686)
+- Email: mathematecs1@gmail.com
 
 ---
 
 ## 🙏 Acknowledgments
 
-- Inspired by ReAct (Wei et al., 2022)
 - Built with Python 3.12+
 - Integrates with OpenAI, Anthropic, and local LLMs
 - Thanks to the open-source community
@@ -444,16 +444,16 @@ If you use MyAgent in your research, please cite:
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/myAgent/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/myAgent/discussions)
-- **Email**: support@myagent.dev
+- **Issues**: [GitHub Issues](https://github.com/blackeagle686/myAgent/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/blackeagle686/myAgent/discussions)
+- **Email**: mathematecs1@gmail.com
 
 ---
 
 <div align="center">
 
-**Made with ❤️ by the MyAgent Team**
+**Made with ❤️**
 
-[⭐ Star us on GitHub](https://github.com/yourusername/myAgent) • [📧 Contact](mailto:your.email@example.com) • [🐦 Follow](https://twitter.com)
+[⭐ Star us on GitHub](https://github.com/blackeagle686/myAgent) • [📧 Contact](mailto:mathematecs1@gmail.com) 
 
 </div>
