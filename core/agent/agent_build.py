@@ -4,12 +4,12 @@ from .agent_actor import AgentActor
 from .agent_planner import Thinker
 from ..services.task_manager import TaskManager
 from ..services.llm_service import client, encoder_client
-from ..tools import ToolRegistry, PythonREPLTool, RagSearchTool, FileReadTool, FileWriteTool, ListDirTool
+from ..tools import ToolRegistry, PythonREPLTool, RagSearchTool, FileReadTool, FileWriteTool, ListDirTool, FastAnswerTool
 
 logger = logging.getLogger(__name__)
 
 class BrainAgent:
-    def __init__(self, sys_prompt: str, tools=None):
+    def __init__(self, sys_prompt: str = "You are a helpful and autonomous AI agent.", tools=None):
         self.sys_prompt = sys_prompt
         self.memory = MemoryStore(encoder=encoder_client, llm=client)
         self.exp_memory = ExperienceMemory()
@@ -19,6 +19,7 @@ class BrainAgent:
             tools = [
                 PythonREPLTool(), 
                 RagSearchTool(),
+                FastAnswerTool(),
                 FileReadTool(),
                 FileWriteTool(),
                 ListDirTool()

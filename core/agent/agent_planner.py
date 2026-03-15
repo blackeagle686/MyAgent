@@ -42,6 +42,9 @@ problem_type:
 difficulty:
 needs_tools:
 strategy:
+
+Available tools for decomposition:
+{tool_info}
 """
 
 _TASK_DECOMP_PROMPT = """\
@@ -64,9 +67,13 @@ class Thinker:
     # Public API
     # ------------------------------------------------------------------
 
-    def think(self, prompt: str) -> Tuple[str, List[Task]]:
+    def think(self, prompt: str, tools: Optional[Dict[str, Any]] = None) -> Tuple[str, List[Task]]:
         """Return (analysis_text, tasks) for *prompt*."""
-        analysis = self._analyze(prompt)
+        tool_info = ""
+        if tools:
+            tool_info = "\n".join([f"- {name}: {tool.description}" for name, tool in tools.items()])
+        
+        analysis = self._analyze(prompt, tool_info)
         tasks = self._decompose(analysis)
         return analysis, tasks
 
@@ -74,8 +81,9 @@ class Thinker:
     # Internal
     # ------------------------------------------------------------------
 
-    def _analyze(self, prompt: str) -> str:
-        return self.model.generate(user_prompt=prompt, sys_prompt=_ANALYSIS_PROMPT)
+    def _analyze(self, prompt: str, tool_info: str = "") -> str:
+        sys_prompt = _ANALYSIS_PROMPT.format(tool_info=tool_info)
+        return self.model.generate(user_prompt=prompt, sys_prompt=sys_prompt)
 
     def _decompose(self, analysis: str) -> List[Task]:
         raw = self.model.generate(user_prompt=analysis, sys_prompt=_TASK_DECOMP_PROMPT)

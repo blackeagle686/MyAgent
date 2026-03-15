@@ -23,7 +23,7 @@ from typing import Callable, Optional
 logger = logging.getLogger(__name__)
 
 # Sandbox root — every path-based tool is confined here
-WORKSPACE_ROOT: str = os.path.abspath("./workspace")
+WORKSPACE_ROOT: str = os.path.abspath(".")
 
 # Patterns that must never appear in code passed to the agent
 _BLOCKED_PATTERNS: tuple[str, ...] = (

@@ -8,3 +8,4 @@ scikit-learn
 requests
 typer
 rich
+PySide6

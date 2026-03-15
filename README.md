@@ -1,6 +1,6 @@
 # 🤖 MyAgent - Autonomous AI Agent Framework
 
-> A production-ready Python framework for building autonomous AI agents with ReAct reasoning, tool integration, and agentic memory management.
+> A production-ready Python framework for building autonomous AI agents with ReAct reasoning, tool integration, and agentic memory management. Now featuring a professional PySide6 Desktop GUI!
 
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -12,81 +12,52 @@
 
 **MyAgent** is a sophisticated autonomous agent framework designed to bridge the gap between large language models and real-world task execution. It implements the **ReAct** (Reasoning + Acting) pattern, enabling agents to think through complex problems, select appropriate tools, execute them safely, and adapt based on observations.
 
-Perfect for building:
-- 🧠 Autonomous task automation systems
-- 🔧 AI-powered tool orchestration
-- 📊 Intelligent data analysis pipelines
-- 💬 Advanced chatbots with real capabilities
-- 🔍 Research and information retrieval agents
+### 🌟 New in v1.1
+- **Professional Desktop GUI**: A sleek PySide6-based dashboard to visualize thinking/planning live.
+- **Enhanced CLI Experience**: Rich-powered console with structured reasoning and status spinners.
+- **Tool-Aware Decomposition**: The Thinker now "knows" available tools during the first analysis phase.
+- **FastAnswerTool**: Blazing fast direct responses for simple factual queries.
+- **Workspace Sandboxing**: Restricted file operations to the project root for production safety.
 
 ---
 
 ## ✨ Key Features
 
+### 🖥️ **Desktop & CLI Interfaces**
+- **PySide6 Dashboard**: A premium dark-themed desktop app with "Internal Process" monitoring.
+- **Rich CLI**: Beautiful terminal output with panels, tables, and live status updates.
+- **Multithreaded**: Agent runs in the background to keep the UI responsive.
+
 ### 🧠 **Intelligence Layer**
-- **ReAct Loop**: Reasoning → Acting → Observing cycle for adaptive decision-making
-- **Brain Agent**: Central orchestrator managing thought processes and tool selection
-- **Planning System**: Hierarchical task decomposition and planning
-- **Memory Management**: Episodic memory with vector-based retrieval for context awareness
+- **ReAct Loop**: Reasoning → Acting → Observing cycle for adaptive decision-making.
+- **Brain Agent**: Central orchestrator managing thought processes and tool selection.
+- **Hierarchical Planning**: Decomposes complex goals into atomic tasks.
+- **Episodic Memory**: Learns from past experiences via vector-based retrieval.
 
-### 🛠️ **Tool Ecosystem**
-- **10+ Built-in Tools**: File system ops, Python REPL, web search, and more
-- **Secure Tool Execution**: Decorators-based security framework with sandboxing
-- **Tool Registry**: Dynamic tool management and registration system
-- **Tool Chaining**: Support for multi-step tool workflows
-
-### 🔐 **Security & Reliability**
-- **Code Security Decorators**: Malicious code detection and sandboxing
-- **Input Validation**: 5-point validation system for all tool calls
-- **Error Recovery**: Comprehensive error handling without agent crashes
-- **Execution History**: Full audit trail of all tool executions
-
-### 🎯 **Developer Experience**
-- **Type-Safe**: 95% type hint coverage across codebase
-- **Comprehensive Logging**: DEBUG/INFO/ERROR levels for transparency
-- **Example Scenarios**: 8+ documented usage patterns
-- **Well-Documented**: Architecture guides, API docs, and inline examples
-
-### 🌐 **Web Interface**
-- **Dashboard**: Real-time agent monitoring and metrics
-- **Chat Interface**: Interactive agent communication
-- **History Tracking**: Complete execution history visualization
+### 🛠️ **Tool Ecosystem (Secured)**
+- **11+ Built-in Tools**: File system, Python REPL, web search, FastAnswer, and more.
+- **Production Security**: `@restrict_path`, `@validate_code`, and `@safe_execution` decorators.
+- **Workspace Root Control**: Configurable sandbox boundaries for file tools.
 
 ---
 
 ## 🏗️ Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                   Web Interface Layer                       │
-│         (Chat Page, Dashboard, Real-time Updates)           │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-┌────────────────────▼────────────────────────────────────────┐
-│                 Agent Core (BrainAgent)                     │
-│    ┌──────────────┐  ┌──────────────┐  ┌───────────────┐    │
-│    │   Planner    │  │   Memory     │  │   Loop Ctrl   │    │
-│    │ (Reasoning)  │  │ (Episodic)   │  │ (ReAct Cycle) │    │
-│    └──────────────┘  └──────────────┘  └───────────────┘    │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-┌────────────────────▼────────────────────────────────────────┐
-│              AgentActor (Execution Engine)                  │
-│  ┌─────────────┐  ┌───────────────┐  ┌─────────────────┐    │
-│  │   Parser    │→ │  Validator    │→ │   Executor      │    │
-│  │ (JSON Ext)  │  │ (5-pt Check)  │  │ (Sandboxed)     │    │
-│  └─────────────┘  └───────────────┘  └─────────────────┘    │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-┌────────────────────▼────────────────────────────────────────┐
-│                  Tool Layer                                 │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐   │
-│  │ File System  │  │ Python REPL  │  │  Web Search      │   │
-│  └──────────────┘  └──────────────┘  └──────────────────┘   │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐   │
-│  │ Vector DB    │  │  Task Mgr    │  │ Custom Tools...  │   │
-│  └──────────────┘  └──────────────┘  └──────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    UI[Desktop GUI / Rich CLI] --> Agent[BrainAgent]
+    Agent --> Thinker[Tool-Aware Thinker]
+    Agent --> Planner[Dynamic Planner]
+    Agent --> Memory[Episodic Memory]
+    
+    Planner --> Actor[AgentActor]
+    Actor --> Security[Security Decorators]
+    Security --> Tools[Tool Registry]
+    
+    Tools --> FST[File System]
+    Tools --> REPL[Python REPL]
+    Tools --> SRCH[RAG Search]
+    Tools --> FAST[Fast Answer]
 ```
 
 ---
@@ -95,365 +66,71 @@ Perfect for building:
 
 ### Prerequisites
 - Python 3.12 or higher
-- pip or conda package manager
+- `libxcb-cursor0` (for Linux GUI support)
+
+```bash
+# Ubuntu/Debian
+sudo apt-get install libxcb-cursor0
+```
 
 ### Quick Start
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/myAgent.git
+# Clone and enter
+git clone https://github.com/blackeagle686/myAgent.git
 cd myAgent
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
+# Setup environment
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
-
-# Verify installation
-python -c "from core.agent import AgentActor; print('✓ Installation successful')"
-```
-
-### Configuration
-
-1. **Create `.env` file** in project root:
-```env
-### example: 
-LLM_API_KEY=your_api_key_here
-LLM_MODEL=gpt-4-turbo
-VECTOR_DB_URL=http://localhost:6333
-LOG_LEVEL=INFO
-```
-
-2. **Update `config.py`**:
-```python
-# Select LLM provider
-LLM_PROVIDER = "openai"  # or "anthropic", "local"
-
-# Tool configuration
-ENABLE_CODE_EXECUTION = True
-SANDBOX_MODE = True
-
-# Memory settings
-MEMORY_VECTOR_DIMENSION = 1536
-MEMORY_SIMILARITY_THRESHOLD = 0.7
 ```
 
 ---
 
-## 🚀 Quick Start Usage
+## 🚀 Usage
 
-### Basic Agent Setup
-
-```python
-from core.agent import BrainAgent, AgentActor
-from core.tools import ToolRegistry
-from core.services import LLMService
-
-# Initialize components
-llm = LLMService(model="gpt-4-turbo", api_key="sk-...")
-registry = ToolRegistry()
-registry.register_default_tools()
-
-# Create agent
-agent = BrainAgent(llm_service=llm, tool_registry=registry)
-
-# Run agent on a task
-task = "Analyze the file 'data.csv' and summarize key insights"
-result = agent.execute(task, max_iterations=5)
-
-print(result)
+### Option 1: The Desktop GUI (Recommended)
+Launch the premium dashboard to see the agent's internal thought process in real-time.
+```bash
+python3 run_gui.py
 ```
 
-### Tool Execution Example
-
-```python
-from core.agent import AgentActor
-
-actor = AgentActor(registry=registry)
-
-# Simulate LLM response with tool call
-llm_response = """
-Let me search for information about Python.
-
-<tool_call>
-{
-  "tool_name": "web_search",
-  "kwargs": {
-    "query": "Python programming language",
-    "max_results": 5
-  }
-}
-</tool_call>
-"""
-
-observation = actor.act(llm_response)
-print(observation)  # Returns search results
-```
-
-### Custom Tool Registration
-
-```python
-from core.tools import BaseTool
-import json
-
-class CustomAnalyzer(BaseTool):
-    def __init__(self):
-        self.name = "custom_analyzer"
-        self.description = "Analyzes custom data format"
-        
-    def execute(self, data: str) -> dict:
-        # Your analysis logic
-        return {"status": "analyzed", "data": data}
-
-# Register custom tool
-analyzer = CustomAnalyzer()
-registry.register(analyzer)
+### Option 2: The Rich CLI
+Run the agent directly from your terminal with visual status updates.
+```bash
+python3 run_agent.py "What is the capital of Egypt?" --verbose
 ```
 
 ---
 
 ## 📚 Project Structure
 
-```
-myAgent/
-├── app/                          # Web application layer
-│   └── main.py                  # Flask/FastAPI app
-├── core/                         # Core agent framework
-│   ├── agent/                   # Agent components
-│   │   ├── agent_actor.py       # Tool execution engine (ReAct)
-│   │   ├── agent_planner.py     # Planning & reasoning
-│   │   ├── agent_memory.py      # Memory management
-│   │   ├── agent_loop.py        # ReAct loop orchestration
-│   │   └── agent_build.py       # BrainAgent (main coordinator)
-│   ├── services/                # Service layer
-│   │   ├── llm_service.py       # LLM provider abstraction
-│   │   ├── vector_db_service.py # Vector database
-│   │   ├── memory_manager.py    # Memory operations
-│   │   ├── task_manager.py      # Task management
-│   │   ├── loader_services.py   # Document loading
-│   │   └── base_vectordb.py     # Abstract base classes
-│   ├── tools/                   # Tool ecosystem
-│   │   ├── base.py              # Tool base class
-│   │   ├── registry.py          # Tool registry
-│   │   ├── file_system.py       # File operations
-│   │   ├── python_repl.py       # Python execution
-│   │   ├── search.py            # Search tools
-│   │   └── code_security_decorator.py  # Security layer
-│   └── utils.py                 # Utility functions
-├── templates/                    # Web UI templates
-│   ├── chat_page.html           # Chat interface
-│   └── dashboard.html           # Monitoring dashboard
-├── test/                         # Tests & examples
-│   ├── agent_actor_examples.py  # Usage examples
-│   └── llm_client_test.py       # Integration tests
-├── config.py                     # Configuration management
-├── requirements.txt              # Dependencies
-└── README.md                     # This file
-```
+- `core/agent/`: The heart of the framework (Brain, Planner, Loop).
+- `core/tools/`: The secure tool ecosystem and decorators.
+- `gui/`: PySide6 implementation and modern dark styling.
+- `config.py`: Central configuration for models (OpenRouter/Local) and API keys.
+- `ARCHITECTURE.md`: Deep dive into core module logic.
 
 ---
 
 ## 🔧 Core Components
 
-### **BrainAgent** - The Orchestrator
-Central command center managing the entire agent lifecycle. Coordinates thinking (planning), acting (tool execution), and memory operations.
+### **Thinker & Planner**
+The **Thinker** first analyzes the problem using tool-aware context, then the **Planner** decides the exact tool sequence to achieve the goal.
 
-### **AgentActor** - The Executor
-Parses LLM responses, validates tool calls (5-point validation), and executes tools safely. Returns observations to continue ReAct loop.
-
-### **AgentPlanner** - The Reasoner
-Generates reasoning traces and decomposes complex tasks into actionable steps.
-
-### **AgentMemory** - The Learner
-Maintains episodic memory with vector-based retrieval. Learns from past interactions.
-
-### **ToolRegistry** - The Hub
-Central registry for all available tools. Manages tool discovery, validation, and execution.
+### **Security Stack**
+Every tool is wrapped in a multi-layer security stack:
+- `@safe_execution`: Catches crashes and returns them as observations.
+- `@restrict_path`: Confines the agent to the `WORKSPACE_ROOT`.
+- `@validate_code`: Blocks dangerous Python patterns (e.g., `os.system`).
 
 ---
 
-## 🛡️ Security Features
-
-### Input Validation
-```python
-# 5-point validation on all tool calls:
-1. Tool existence check
-2. Tool name type validation
-3. Kwargs type validation
-4. Payload size limits (100KB max)
-5. Argument schema matching
-```
-
-### Code Security Decorators
-- **Sandboxing**: Isolates Python code execution
-- **Malware Detection**: Static analysis for suspicious patterns
-- **Resource Limits**: CPU, memory, and execution time limits
-- **Safe Imports**: Whitelist of allowed modules
-
-### Error Handling
-All errors converted to observations, never crashing the agent loop.
-
----
-
-## 📊 Execution Metrics
-
-Track agent performance with built-in metrics:
-
-```python
-# Get execution statistics
-stats = actor.get_execution_stats()
-print(stats)
-# Output:
-# {
-#   'total_executions': 12,
-#   'successful_tools': 11,
-#   'failed_tools': 1,
-#   'avg_execution_time': 0.45,
-#   'memory_usage': '52MB'
-# }
-```
-
----
-
-## 🧪 Testing & Examples
-
-Run included examples:
-
-```bash
-# Test basic agent operations
-python test/agent_actor_examples.py
-
-# Test LLM client integration
-python test/llm_client_test.py
-
-# Run specific scenario
-python -c "from test.agent_actor_examples import run_scenario_1; run_scenario_1()"
-```
-
----
-
-## 🌐 Web Interface
-
-Start the web dashboard:
-
-```bash
-python app/main.py
-```
-
-Access at: `http://localhost:5000`
-
-- **Chat Interface**: Interactive agent communication
-- **Dashboard**: Real-time metrics and monitoring
-- **History**: Complete execution history with full trace
-
----
-
-## 🤝 Contributing
-
-Contributions welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Add tests if applicable
-5. Commit (`git commit -m 'Add amazing feature'`)
-6. Push (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
-
----
-
-## 📝 Documentation
-
-- **[Agent Architecture Guide](./core/agent/AGENT_ACTOR_GUIDE.md)** - Detailed component documentation
-- **[API Reference](./docs/API.md)** - Complete API reference
-- **[Security Guide](./docs/SECURITY.md)** - Security best practices
-- **[Examples](./test/agent_actor_examples.py)** - 8+ usage scenarios
-
----
-
-## 🐛 Troubleshooting
-
-### Agent not executing tools
-- Check tool registration: `registry.list_tools()`
-- Verify LLM API key in `.env`
-- Enable debug logging: `LOG_LEVEL=DEBUG`
-
-### Memory issues
-- Reduce vector DB query results
-- Implement memory pruning
-- Check disk space for vector DB
-
-### LLM API errors
-- Verify API credentials
-- Check rate limits
-- Use fallback LLM provider
-
----
-
-## 📈 Roadmap
-
-- [ ] Async tool execution
-- [ ] Tool chaining optimization
-- [ ] Multi-agent coordination
-- [ ] Streaming responses
-- [ ] Advanced memory indexing
-- [ ] Custom training on tasks
-- [ ] Docker containerization
-- [ ] Kubernetes deployment
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see [LICENSE](LICENSE) file for details.
-
----
-
-## 👤 Author
+## 🛡️ License & Authors
 
 **Mohammed Alaa**
-- GitHub: [@yourusername](https://github.com/blackeagle686)
+- GitHub: [@blackeagle686](https://github.com/blackeagle686)
 - Email: mathematecs1@gmail.com
 
----
-
-## 🙏 Acknowledgments
-
-- Built with Python 3.12+
-- Integrates with OpenAI, Anthropic, and local LLMs
-- Thanks to the open-source community
-
----
-
-## 💡 Citation
-
-If you use MyAgent in your research, please cite:
-
-```bibtex
-@software{myagent2024,
-  title={MyAgent: Autonomous AI Agent Framework},
-  author={Your Name},
-  year={2024},
-  url={https://github.com/yourusername/myAgent}
-}
-```
-
----
-
-## 📞 Support
-
-- **Issues**: [GitHub Issues](https://github.com/blackeagle686/myAgent/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/blackeagle686/myAgent/discussions)
-- **Email**: mathematecs1@gmail.com
-
----
-
-<div align="center">
-
-**Made with ❤️**
-
-[⭐ Star us on GitHub](https://github.com/blackeagle686/myAgent) • [📧 Contact](mailto:mathematecs1@gmail.com) 
-
-</div>
+Licensed under the MIT License. Built with ❤️ for the AI community.

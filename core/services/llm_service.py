@@ -20,7 +20,7 @@ class LLMClient:
     def generate(self, user_prompt: str, memory=None,
                 sys_prompt: Optional[str] = None,
                 temperature: float = 0.3,
-                max_tokens: int = 2000) -> str:
+                max_tokens: int = 4096) -> str:
 
         if not sys_prompt:
             sys_prompt = "You are an intelligent AI assistant"
