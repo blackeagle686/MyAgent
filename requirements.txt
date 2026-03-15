@@ -1,0 +1,10 @@
+openai
+chromadb
+sentence-transformers
+torch
+numpy
+scipy
+scikit-learn
+requests
+typer
+rich

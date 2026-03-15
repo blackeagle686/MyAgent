@@ -22,7 +22,7 @@ from typing import Any, Dict, List, Optional
 
 from ..utils import cosine_similarity
 from ..services.vector_db_service import ChromaVectorDB
-from services.llm_service import client, encoder_client
+from ..services.llm_service import client, encoder_client
 from config import Config
 
 logger = logging.getLogger(__name__)
@@ -78,8 +78,8 @@ class MemoryCell:
         try:
             self.vec = _to_vec(self.encoder, self.content)
             self.summary = self.llm.generate(
-                self.content,
-                "Summarize in <=100 words",
+                user_prompt=self.content,
+                sys_prompt="Summarize in <=100 words",
             )
             self.summary_vec = _to_vec(self.encoder, self.summary)
         except Exception as exc:
@@ -244,8 +244,8 @@ class Experience:
             f"Final Answer: {self.final_answer}"
         )
         self.summary = client.generate(
-            body,
-            "Summarize this agent trajectory and the key lessons learned in <=100 words",
+            user_prompt=body,
+            sys_prompt="Summarize this agent trajectory and the key lessons learned in <=100 words",
         )
 
 

@@ -75,10 +75,10 @@ class Thinker:
     # ------------------------------------------------------------------
 
     def _analyze(self, prompt: str) -> str:
-        return self.model.generate(prompt, _ANALYSIS_PROMPT)
+        return self.model.generate(user_prompt=prompt, sys_prompt=_ANALYSIS_PROMPT)
 
     def _decompose(self, analysis: str) -> List[Task]:
-        raw = self.model.generate(analysis, _TASK_DECOMP_PROMPT)
+        raw = self.model.generate(user_prompt=analysis, sys_prompt=_TASK_DECOMP_PROMPT)
         items = _parse_json(raw, fallback=[])
         return [
             Task(prompt=item["task"], priority=item["priority"])
@@ -132,11 +132,13 @@ class Planner:
         self,
         task_manager: TaskManager,
         tools: Dict[str, Any],
+        user_context: Optional[str] = None,
         cfg: Optional[PlannerConfig] = None,
     ) -> None:
         self.model = client
         self.task_manager = task_manager
         self.tools = tools
+        self.user_context = user_context
         self.cfg = cfg or PlannerConfig()
 
     # ------------------------------------------------------------------
@@ -159,23 +161,28 @@ class Planner:
 
     def _tool_descriptions(self) -> str:
         lines = [
-            f"{name}: {tool.get('description', '') if isinstance(tool, dict) else ''}"
+            f"{name}: {tool.description}"
             for name, tool in self.tools.items()
         ]
         return self.cfg.tool_description_separator.join(lines)
 
     def _build_context(self, task: Task) -> str:
-        return (
-            f"Current task:\n{task.prompt}\n\n"
+        ctx = ""
+        if self.user_context:
+            ctx += f"Original User Goal: {self.user_context}\n\n"
+        
+        ctx += (
+            f"Current sub-task:\n{task.prompt}\n\n"
             f"Status:        {task.status}\n"
             f"Previous result: {task.result}\n"
             f"Assigned tool: {task.tool}\n\n"
             f"Available tools:\n{self._tool_descriptions()}"
         )
+        return ctx
 
     def _plan(self, task: Task) -> Dict[str, Any]:
         context = self._build_context(task)
-        raw = self.model.generate(context, _PLANNER_SYSTEM)
+        raw = self.model.generate(user_prompt=context, sys_prompt=_PLANNER_SYSTEM)
         return _parse_json(raw, fallback=_PLAN_FALLBACK)
 
     @staticmethod

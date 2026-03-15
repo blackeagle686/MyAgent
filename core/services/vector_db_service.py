@@ -2,7 +2,7 @@ import chromadb
 import logging
 from typing import List,Dict,Optional
 from chromadb.utils import embedding_functions
-from base_vectordb import BaseVectorDB
+from .base_vectordb import BaseVectorDB
 from config import Config
 
 

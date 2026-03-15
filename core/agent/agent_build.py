@@ -1,26 +1,24 @@
 import logging
-from .agent_planner import ExperienceMemory, Exp
-from .agent_memory import MemoryStore
+from .agent_memory import MemoryStore, ExperienceMemory, Experience
 from .agent_actor import AgentActor
-from ..services.llm_service import client
-from ..tools import ToolRegistry, PythonREPLTool, SearchTool, FileReadTool, FileWriteTool, ListDirTool
+from .agent_planner import Thinker
+from ..services.task_manager import TaskManager
+from ..services.llm_service import client, encoder_client
+from ..tools import ToolRegistry, PythonREPLTool, RagSearchTool, FileReadTool, FileWriteTool, ListDirTool
 
 logger = logging.getLogger(__name__)
 
 class BrainAgent:
     def __init__(self, sys_prompt: str, tools=None):
         self.sys_prompt = sys_prompt
-        # Import dynamically here to avoid circular imports if any
-        from ..services.llm_service import model
-        
-        self.memory = MemoryStore(encoder=model, llm=client)
+        self.memory = MemoryStore(encoder=encoder_client, llm=client)
         self.exp_memory = ExperienceMemory()
         
         # Initialize default ToolRegistry if no tools list is provided
         if tools is None:
             tools = [
                 PythonREPLTool(), 
-                SearchTool(),
+                RagSearchTool(),
                 FileReadTool(),
                 FileWriteTool(),
                 ListDirTool()
@@ -28,6 +26,8 @@ class BrainAgent:
             
         self.registry = ToolRegistry(tools=tools)
         self.actor = AgentActor(registry=self.registry)
+        self.thinker = Thinker()
+        self.task_manager = TaskManager()
 
     def think(self, user_prompt: str, trajectory: list = None) -> str:
         """
@@ -72,14 +72,14 @@ class BrainAgent:
         ```
         If you have successfully completed the task, output your final answer starting with "FINAL_ANSWER: ".
         """
-        return client.generate(user_prompt=prompt, temperature=0.2)
+        return client.generate(user_prompt=user_prompt, sys_prompt=prompt, temperature=0.2)
 
     def act(self, llm_response: str) -> str:
         """Executes the tool call parsed from the LLM response"""
         return self.actor.act(llm_response)
 
-    def learn(self, exp: Exp):
+    def learn(self, exp: Experience):
         """Saves an experience and stores the final answer as a semantic memory"""
-        self.exp_memory.add_exp(exp)
+        self.exp_memory.add(exp)
         if exp.final_answer:
             self.memory.add(content=exp.final_answer, metadata={"task": str(exp.task_prompt)})

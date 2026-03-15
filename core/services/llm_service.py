@@ -25,15 +25,17 @@ class LLMClient:
         if not sys_prompt:
             sys_prompt = "You are an intelligent AI assistant"
 
-        if memory is None:
-            memory = []
-
         messages = [
             {
                 "role": "system",
                 "content": sys_prompt
             }
         ]
+
+        if not isinstance(memory, list):
+            if memory is not None:
+                logger.warning("Memory passed as non-list (%s), ignoring. Use named arguments for sys_prompt.", type(memory))
+            memory = []
 
         # add memory
         messages.extend(memory)
@@ -71,19 +73,13 @@ class LLMClient:
         embedding = self.client.embeddings.create(
             extra_headers={},
             model=self.embedding_model,
-            input=[
-            {
-                "content": [
-                {"type": "text", "text": f"{text}"},
-                ]
-            }
-            ],
+            input=text,
             encoding_format="float"
         )
         return embedding.data[0].embedding
 
     def deep_search(self, query): 
-        completion = client.chat.completions.create(
+        completion = self.client.chat.completions.create(
             extra_headers={},
             extra_body={},
             model= self.search_model,
