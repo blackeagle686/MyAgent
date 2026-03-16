@@ -33,7 +33,7 @@
 - **Brain Agent**: Central orchestrator managing thought processes and tool selection.
 - **Episodic Memory**: High-speed local embeddings using `SentenceTransformers`.
 
-### 🛠️ **Tool Ecosystem (Secured)**
+###  **Tool Ecosystem (Secured)**
 - **11+ Built-in Tools**: File system, Python REPL, web search, FastAnswer, and more.
 - **Production Security**: `@restrict_path`, `@validate_code`, and `@safe_execution` decorators.
 - **Workspace Root Control**: Configurable sandbox boundaries for file tools.
