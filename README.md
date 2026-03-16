@@ -4,8 +4,7 @@
 
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Status: Production](https://img.shields.io/badge/Status-Production--Ready-green)](/)
-
+[![Status: Work in Progress](https://img.shields.io/badge/Status-WIP-yellow)](/)
 ---
 
 ##  Overview
