@@ -14,9 +14,9 @@
 
 ### 🌟 New in v1.1
 - **Professional Desktop GUI**: A sleek PySide6-based dashboard to visualize thinking/planning live.
-- **Enhanced CLI Experience**: Rich-powered console with structured reasoning and status spinners.
+- **Hybrid AI & Failover**: Automatic local fallback to Qwen models if OpenRouter APIs fail.
+- **Local Embeddings**: High-performance local vector operations using `sentence-transformers/all-MiniLM-L6-v2`.
 - **Tool-Aware Decomposition**: The Thinker now "knows" available tools during the first analysis phase.
-- **FastAnswerTool**: Blazing fast direct responses for simple factual queries.
 - **Workspace Sandboxing**: Restricted file operations to the project root for production safety.
 
 ---
@@ -29,10 +29,10 @@
 - **Multithreaded**: Agent runs in the background to keep the UI responsive.
 
 ### 🧠 **Intelligence Layer**
+- **Hybrid Reasoning**: Automatic failover to local LLMs (Qwen2.5) for reliability.
 - **ReAct Loop**: Reasoning → Acting → Observing cycle for adaptive decision-making.
 - **Brain Agent**: Central orchestrator managing thought processes and tool selection.
-- **Hierarchical Planning**: Decomposes complex goals into atomic tasks.
-- **Episodic Memory**: Learns from past experiences via vector-based retrieval.
+- **Episodic Memory**: High-speed local embeddings using `SentenceTransformers`.
 
 ### 🛠️ **Tool Ecosystem (Secured)**
 - **11+ Built-in Tools**: File system, Python REPL, web search, FastAnswer, and more.
@@ -49,6 +49,10 @@ graph TD
     Agent --> Thinker[Tool-Aware Thinker]
     Agent --> Planner[Dynamic Planner]
     Agent --> Memory[Episodic Memory]
+    
+    Thinker -.-> LocalThink[Local Thinker Fallback]
+    Planner -.-> LocalPlan[Local Planner Fallback]
+    Memory -.-> LocalEmbed[SentenceTransformer Embeddings]
     
     Planner --> Actor[AgentActor]
     Actor --> Security[Security Decorators]
@@ -116,8 +120,11 @@ python3 run_agent.py "What is the capital of Egypt?" --verbose
 
 ## 🔧 Core Components
 
-### **Thinker & Planner**
-The **Thinker** first analyzes the problem using tool-aware context, then the **Planner** decides the exact tool sequence to achieve the goal.
+### **Hybrid Intelligence & Fallback**
+The agent uses a **Hybrid LLM Stack**. By default, it uses powerful models via OpenRouter (e.g., Llama 3.1 405B). If an API error occurs, it automatically switches to local models (Qwen2.5-3B for Thinking, Qwen2.5-Coder for Planning) to ensure continuous operation.
+
+### **Local Embeddings**
+VDB operations and episodic memory now use `sentence-transformers/all-MiniLM-L6-v2` locally on **CPU**, providing consistent performance and 384-dimensional vector support without external dependencies.
 
 ### **Security Stack**
 Every tool is wrapped in a multi-layer security stack:
