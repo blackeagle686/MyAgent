@@ -9,3 +9,8 @@ requests
 typer
 rich
 PySide6
+transformers
+accelerate
+bitsandbytes
+llama-cpp-python
+huggingface_hub

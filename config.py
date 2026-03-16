@@ -20,10 +20,21 @@ class Config:
     model : str = "nvidia/nemotron-3-super-120b-a12b:free"
     coder_model: str = "nvidia/nemotron-3-super-120b-a12b:free"
     vdb_model: str = "all-MiniLM-L6-v2"
+    
+    # Local LLMs
+    local_thinker_model: str = "Qwen/Qwen2.5-3B-Instruct"
+    local_planner_model: str = "Qwen/Qwen2.5-Coder-3B-Instruct-GGUF"
+    local_embedding_model: str = "Qwen/Qwen3-VL-Embedding-2B"
+    
     # Agent config
     top_k: int = 3
     similarity_threshold: float = 0.55
     max_memory_cells: int = 1000
     experience_reward_decay: float = 0.9
     enable_emotions: bool = True
+    
+    # Rate Limit & Caching
+    enable_cache: bool = True
+    max_retries: int = 3
+    backoff_factor: float = 2.0
     
