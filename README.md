@@ -1,4 +1,4 @@
-# 🤖 MyAgent - Autonomous AI Agent Framework
+#  MyAgent - Autonomous AI Agent Framework
 
 > A production-ready Python framework for building autonomous AI agents with ReAct reasoning, tool integration, and agentic memory management. Now featuring a professional PySide6 Desktop GUI!
 
@@ -8,11 +8,11 @@
 
 ---
 
-## 🚀 Overview
+##  Overview
 
 **MyAgent** is a sophisticated autonomous agent framework designed to bridge the gap between large language models and real-world task execution. It implements the **ReAct** (Reasoning + Acting) pattern, enabling agents to think through complex problems, select appropriate tools, execute them safely, and adapt based on observations.
 
-### 🌟 New in v1.1
+###  New in v1.1
 - **Professional Desktop GUI**: A sleek PySide6-based dashboard to visualize thinking/planning live.
 - **Hybrid AI & Failover**: Automatic local fallback to Qwen models if OpenRouter APIs fail.
 - **Local Embeddings**: High-performance local vector operations using `sentence-transformers/all-MiniLM-L6-v2`.
@@ -21,14 +21,14 @@
 
 ---
 
-## ✨ Key Features
+##  Key Features
 
-### 🖥️ **Desktop & CLI Interfaces**
+###  **Desktop & CLI Interfaces**
 - **PySide6 Dashboard**: A premium dark-themed desktop app with "Internal Process" monitoring.
 - **Rich CLI**: Beautiful terminal output with panels, tables, and live status updates.
 - **Multithreaded**: Agent runs in the background to keep the UI responsive.
 
-### 🧠 **Intelligence Layer**
+###  **Intelligence Layer**
 - **Hybrid Reasoning**: Automatic failover to local LLMs (Qwen2.5) for reliability.
 - **ReAct Loop**: Reasoning → Acting → Observing cycle for adaptive decision-making.
 - **Brain Agent**: Central orchestrator managing thought processes and tool selection.
@@ -41,7 +41,7 @@
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 ```mermaid
 graph TD
@@ -66,7 +66,7 @@ graph TD
 
 ---
 
-## 📦 Installation
+##  Installation
 
 ### Prerequisites
 - Python 3.12 or higher
@@ -92,7 +92,7 @@ pip install -r requirements.txt
 
 ---
 
-## 🚀 Usage
+##  Usage
 
 ### Option 1: The Desktop GUI (Recommended)
 Launch the premium dashboard to see the agent's internal thought process in real-time.
@@ -108,7 +108,7 @@ python3 run_agent.py "What is the capital of Egypt?" --verbose
 
 ---
 
-## 📚 Project Structure
+##  Project Structure
 
 - `core/agent/`: The heart of the framework (Brain, Planner, Loop).
 - `core/tools/`: The secure tool ecosystem and decorators.
@@ -118,7 +118,7 @@ python3 run_agent.py "What is the capital of Egypt?" --verbose
 
 ---
 
-## 🔧 Core Components
+##  Core Components
 
 ### **Hybrid Intelligence & Fallback**
 The agent uses a **Hybrid LLM Stack**. By default, it uses powerful models via OpenRouter (e.g., Llama 3.1 405B). If an API error occurs, it automatically switches to local models (Qwen2.5-3B for Thinking, Qwen2.5-Coder for Planning) to ensure continuous operation.
@@ -134,10 +134,8 @@ Every tool is wrapped in a multi-layer security stack:
 
 ---
 
-## 🛡️ License & Authors
+##  License & Authors
 
 **Mohammed Alaa**
 - GitHub: [@blackeagle686](https://github.com/blackeagle686)
 - Email: mathematecs1@gmail.com
-
-Licensed under the MIT License. Built with ❤️ for the AI community.
