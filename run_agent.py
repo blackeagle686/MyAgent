@@ -15,7 +15,31 @@ def setup_mocks():
         if module_name not in sys.modules:
             sys.modules[module_name] = MagicMock()
 
+
+import os
+
+def print_banner():
+
+    os.system(r'''
+(
+echo ""
+echo "           ,~."
+echo "          (o o)"
+echo "     ----(  V  )----"
+echo "           U U"
+echo ""
+echo "        >>> MyAgent <<<"
+echo ""
+) | lolcat -a -d 3
+''')
+
+    os.system('toilet -f mono12 -F metal "MY AGENT" | lolcat -a')
+
+    print()
+
+
 def main():
+    print_banner()
     parser = argparse.ArgumentParser(description="Run the BrainAgent Loop")
     parser.add_argument("prompt", type=str, help="The user prompt to send to the agent")
     parser.add_argument("--mock", action="store_true", help="Run with mocked dependencies (no API keys required)")
