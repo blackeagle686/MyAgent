@@ -23,10 +23,38 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 def _parse_json(text: str, fallback: Any) -> Any:
-    """Parse JSON from *text*, returning *fallback* on failure."""
+    """Parse JSON from *text*, returning *fallback* on failure.
+    Handles markdown code blocks if present.
+    """
+    clean_text = text.strip()
+    if clean_text.startswith("```"):
+        # Find the first { or [ and last } or ]
+        start_idx = -1
+        for char in ['{', '[']:
+            idx = clean_text.find(char)
+            if idx != -1 and (start_idx == -1 or idx < start_idx):
+                start_idx = idx
+        
+        end_idx = -1
+        for char in ['}', ']']:
+            idx = clean_text.rfind(char)
+            if idx != -1 and (end_idx == -1 or idx > end_idx):
+                end_idx = idx
+        
+        if start_idx != -1 and end_idx != -1:
+            clean_text = clean_text[start_idx:end_idx+1]
+
     try:
-        return json.loads(text)
+        return json.loads(clean_text)
     except Exception as exc:
+        # One last ditch effort: look for any JSON block
+        try:
+            import re
+            match = re.search(r'(\{.*\}|\[.*\])', text, re.DOTALL)
+            if match:
+                return json.loads(match.group(0))
+        except:
+            pass
         logger.error("JSON parse error: %s", exc)
         return fallback
 
@@ -36,24 +64,30 @@ def _parse_json(text: str, fallback: Any) -> Any:
 # ---------------------------------------------------------------------------
 
 _ANALYSIS_PROMPT = """\
-Analyse the problem and return ONLY a plain-text response with these fields:
+You are an expert systems analyst. Analyze the user's request and provide a technical strategy.
+Return your response ONLY as a plain text block with these specific fields:
 
-problem_type:
-difficulty:
-needs_tools:
-strategy:
+problem_type: (e.g., Coding, System, Research)
+difficulty: (1-10)
+needs_tools: (Yes/No)
+strategy: (Detailed step-by-step approach)
 
-Available tools for decomposition:
+Available tools for context:
 {tool_info}
 """
 
 _TASK_DECOMP_PROMPT = """\
-Break the problem into atomic, independently executable tasks.
-Return STRICT JSON — no prose, no markdown fences:
+You are a project manager. Based on the analysis provided, decompose the project into a list of atomic, sequential tasks.
+Each task must be actionable by a single tool or a simple code block.
 
+Return ONLY a valid JSON array of objects. DO NOT include markdown blocks, DO NOT include prose.
+Example Format:
 [
-  {"task": "<description>", "priority": <1-5>}
+  {"task": "Read requirements.txt", "priority": 5},
+  {"task": "Install dependencies", "priority": 4}
 ]
+
+Analysis to decompose:
 """
 
 
@@ -73,20 +107,29 @@ class Thinker:
         if tools:
             tool_info = "\n".join([f"- {name}: {tool.description}" for name, tool in tools.items()])
         
-        analysis = self._analyze(prompt, tool_info)
-        tasks = self._decompose(analysis)
+        # Determine which model to use for analysis/decomposition
+        target_model = None
+        coding_keywords = ["python", "script", "code", "function", "class", "coding", "logic", "algorithm"]
+        if any(kw in prompt.lower() for kw in coding_keywords):
+            target_model = getattr(self.model, "coder_model", None)
+            if target_model:
+                logger.info("Thinker switching to coder_model for coding prompt")
+
+        analysis = self._analyze(prompt, tool_info, model_override=target_model)
+        tasks = self._decompose(analysis, model_override=target_model)
         return analysis, tasks
 
     # ------------------------------------------------------------------
     # Internal
     # ------------------------------------------------------------------
 
-    def _analyze(self, prompt: str, tool_info: str = "") -> str:
+    def _analyze(self, prompt: str, tool_info: str = "", model_override: Optional[str] = None) -> str:
         sys_prompt = _ANALYSIS_PROMPT.format(tool_info=tool_info)
-        return self.model.generate(user_prompt=prompt, sys_prompt=sys_prompt)
+        return self.model.generate(user_prompt=prompt, sys_prompt=sys_prompt, model=model_override)
 
-    def _decompose(self, analysis: str) -> List[Task]:
-        raw = self.model.generate(user_prompt=analysis, sys_prompt=_TASK_DECOMP_PROMPT)
+    def _decompose(self, analysis: str, model_override: Optional[str] = None) -> List[Task]:
+        raw = self.model.generate(user_prompt=analysis, sys_prompt=_TASK_DECOMP_PROMPT, model=model_override)
+        logger.info("DECOMPOSE RAW: %s", raw)
         items = _parse_json(raw, fallback=[])
         return [
             Task(prompt=item["task"], priority=item["priority"])
@@ -112,7 +155,7 @@ Return STRICT JSON — no prose, no markdown fences:
 {
   "action":     "<action>",
   "tool":       "<tool name or null>",
-  "tool_input": "<input string>",
+  "tool_args":  {"arg_name": "value"},
   "reasoning":  "<brief explanation>",
   "confidence": <0.0 – 1.0>
 }
@@ -121,7 +164,7 @@ Return STRICT JSON — no prose, no markdown fences:
 _PLAN_FALLBACK: Dict[str, Any] = {
     "action": "need_more_thinking",
     "tool": None,
-    "tool_input": "",
+    "tool_args": {},
     "reasoning": "parse failure",
     "confidence": 0.2,
 }
@@ -190,7 +233,24 @@ class Planner:
 
     def _plan(self, task: Task) -> Dict[str, Any]:
         context = self._build_context(task)
-        raw = self.model.generate(user_prompt=context, sys_prompt=_PLANNER_SYSTEM)
+        
+        # Determine which model to use
+        target_model = None
+        coding_keywords = ["python", "script", "code", "function", "class", "coding", "logic", "algorithm"]
+        task_text = (task.prompt + " " + (self.user_context or "")).lower()
+        
+        if any(kw in task_text for kw in coding_keywords):
+            target_model = getattr(self.model, "coder_model", None)
+            if target_model:
+                # logger.info("Using coder_model")
+                pass
+        
+        raw = self.model.generate(user_prompt=context, sys_prompt=_PLANNER_SYSTEM, model=target_model)
+        if raw == "LLM generation failed":
+            logger.error("Planner generation failed")
+            return _PLAN_FALLBACK
+        
+        logger.info("PLAN RAW: %s", raw)
         return _parse_json(raw, fallback=_PLAN_FALLBACK)
 
     @staticmethod
@@ -198,5 +258,5 @@ class Planner:
         """Write planner decision back onto the task in-place."""
         if tool := decision.get("tool"):
             task.tool = tool
-        if tool_input := decision.get("tool_input"):
-            task.tool_input = tool_input
+        if tool_args := decision.get("tool_args"):
+            task.tool_input = tool_args  # Keep using tool_input internally but store dict

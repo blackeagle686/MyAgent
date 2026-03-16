@@ -14,13 +14,15 @@ class LLMClient:
             )
         
         self.model = Config.model
+        self.coder_model = Config.coder_model
         self.embedding_model = Config.embedding_model
         self.search_model = Config.search_model
         
     def generate(self, user_prompt: str, memory=None,
                 sys_prompt: Optional[str] = None,
                 temperature: float = 0.3,
-                max_tokens: int = 4096) -> str:
+                max_tokens: int = 4096,
+                model: Optional[str] = None) -> str:
 
         if not sys_prompt:
             sys_prompt = "You are an intelligent AI assistant"
@@ -49,9 +51,9 @@ class LLMClient:
         )
 
         try:
-
+            target_model = model or self.model
             completion = self.client.chat.completions.create(
-                model=self.model,
+                model=target_model,
                 temperature=temperature,
                 max_tokens=max_tokens,
                 messages=messages
@@ -70,13 +72,18 @@ class LLMClient:
             return "LLM generation failed"
     
     def embed(self, text): 
-        embedding = self.client.embeddings.create(
-            extra_headers={},
-            model=self.embedding_model,
-            input=text,
-            encoding_format="float"
-        )
-        return embedding.data[0].embedding
+        try:
+            embedding = self.client.embeddings.create(
+                extra_headers={},
+                model=self.embedding_model,
+                input=text,
+                encoding_format="float"
+            )
+            return embedding.data[0].embedding
+        except Exception as e:
+            logger.warning(f"Embedding failed for {self.embedding_model}, returning zero vector: {e}")
+            # Return a generic 384-dim zero vector (standard for Small MiniLM)
+            return [0.0] * 384
 
     def deep_search(self, query): 
         completion = self.client.chat.completions.create(

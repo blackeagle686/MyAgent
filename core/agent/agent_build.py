@@ -4,7 +4,7 @@ from .agent_actor import AgentActor
 from .agent_planner import Thinker
 from ..services.task_manager import TaskManager
 from ..services.llm_service import client, encoder_client
-from ..tools import ToolRegistry, PythonREPLTool, RagSearchTool, FileReadTool, FileWriteTool, ListDirTool, FastAnswerTool
+from ..tools import ToolRegistry, PythonREPLTool, PythonExecuteTool, BashExecuteTool, RagSearchTool, FileReadTool, FileWriteTool, ListDirTool, FastAnswerTool
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +18,8 @@ class BrainAgent:
         if tools is None:
             tools = [
                 PythonREPLTool(), 
+                PythonExecuteTool(),
+                BashExecuteTool(),
                 RagSearchTool(),
                 FastAnswerTool(),
                 FileReadTool(),

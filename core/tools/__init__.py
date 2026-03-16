@@ -1,6 +1,7 @@
 from .base import BaseTool
 from .registry import ToolRegistry
-from .python_repl import PythonREPLTool
+from .python_repl import PythonREPLTool, PythonExecuteTool
+from .bash_tool import BashExecuteTool
 from .search import DeepSearchTool, RagSearchTool
 from .file_system import FileReadTool, FileWriteTool, ListDirTool, FileDeleteTool, CreateDirTool
 from .fast_answer import FastAnswerTool
@@ -27,6 +28,8 @@ __all__ = [
     
     # Code execution tools
     "PythonREPLTool",
+    "PythonExecuteTool",
+    "BashExecuteTool",
     
     # Search tools
     "DeepSearchTool",

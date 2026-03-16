@@ -3,7 +3,8 @@ from dataclasses import dataclass
 @dataclass
 class Config:
     # OpenRouter API config
-    api_key: str = "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"
+    # api_key: str = "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"
+    api_key: str = "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"
     base_url: str = "https://openrouter.ai/api/v1"
     
     # LLMs  
@@ -11,9 +12,14 @@ class Config:
     search_model: str = "nousresearch/hermes-3-llama-3.1-405b:free"
     # model: str = "qwen/qwen3-vl-30b-a3b-thinking"
     # model: str = "z-ai/glm-4.5-air:free"
-    model : str = "nvidia/nemotron-3-super-120b-a12b:free"
-    vdb_model: str = "all-MiniLM-L6-v2"
+    # model : str = "google/gemini-2.0-flash-lite-preview-02-05:free"
     
+    #  model -> for thinking and planning 
+    # coder_model -> for coding and heavy code tasks
+    # vdb_model -> for vector database operations and embbedings 
+    model : str = "nvidia/nemotron-3-super-120b-a12b:free"
+    coder_model: str = "nvidia/nemotron-3-super-120b-a12b:free"
+    vdb_model: str = "all-MiniLM-L6-v2"
     # Agent config
     top_k: int = 3
     similarity_threshold: float = 0.55

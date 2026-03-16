@@ -1,0 +1,8 @@
+[CODING TASK SPECIFICATION]
+1. Logic Task: Define a function `generate_primes(limit)` that returns a list of primes up to `limit`.
+2. Math Task: Implementation a class `CircularBuffer` with `append` and `get_all` methods of size 5.
+3. Integration: Write a final script `heavy_test.py` that:
+   - Uses `generate_primes` to find primes up to 50.
+   - Appends these primes into a `CircularBuffer`.
+   - Prints the final state of the buffer.
+4. Execution: Run the `heavy_test.py` script and report the terminal output.

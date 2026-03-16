@@ -1,6 +1,7 @@
 from typing import Any
 import sys
 import io
+import os
 import contextlib
 from .base import BaseTool
 from .code_security_decorator import safe_execution, validate_code, timeout, audit_log
@@ -69,4 +70,34 @@ class PythonREPLTool(BaseTool):
             return result.strip() or "Code executed successfully (no output)."
         except Exception as e:
             return f"Error executing code: {type(e).__name__}: {str(e)}"
+
+class PythonExecuteTool(BaseTool):
+    """
+    Executes an existing Python file from the local filesystem.
+    """
+    name = "run_python_file"
+    description = (
+        "Reads and executes a python file. Provide the 'path' argument. "
+        "Returns stdout and stderr."
+    )
+    
+    @safe_execution
+    @validate_code
+    @timeout(seconds=30)
+    @audit_log
+    def execute(self, path: str, **kwargs) -> Any:
+        try:
+            # Check if file exists
+            if not os.path.exists(path):
+                return f"Error: File not found at {path}"
+                
+            with open(path, 'r', encoding='utf-8') as f:
+                code = f.read()
+            
+            # Re-use REPL logic for execution
+            repl = PythonREPLTool()
+            return repl.execute(code=code)
+            
+        except Exception as e:
+            return f"Error running python file: {e}"
 

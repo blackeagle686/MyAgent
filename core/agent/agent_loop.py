@@ -74,32 +74,32 @@ def agent_loop(agent, user_prompt: str, max_steps: int = 10, ui_callback: Option
             plan_md = f"**Task:** {task.prompt}\n\n**Action:** `{decision['action']}`\n\n**Reasoning:** {decision['reasoning']}"
             if decision.get("tool"):
                 plan_md += f"\n\n**Tool:** `{decision['tool']}`"
-                plan_md += f"\n\n**Input:** `{decision['tool_input']}`"
+                args_display = decision.get("tool_args") or decision.get("tool_input", "")
+                plan_md += f"\n\n**Args:** `{args_display}`"
                 
             console.print(Panel(Markdown(plan_md), title=f"[bold cyan]Step {step_count + 1}: Planning[/bold cyan]", border_style="cyan"))
             
             # 3. Execution
             if decision["action"] == "execute_tool":
                 tool_name = decision.get("tool")
-                tool_input = decision.get("tool_input")
+                tool_args = decision.get("tool_args", {})
                 
-                # Construct a response format that AgentActor expects
-                if tool_name == "python_repl":
-                    kwargs = {"code": tool_input}
-                elif tool_name == "list_dir":
-                    kwargs = {"path": tool_input or "."}
-                elif tool_name == "read_file":
-                    kwargs = {"path": tool_input}
-                elif tool_name == "write_file":
-                    kwargs = {"path": tool_input, "content": ""} # Basic placeholder
-                elif tool_name == "fast_answer":
-                    kwargs = {"query": tool_input}
-                else:
-                    kwargs = {"query": tool_input}
+                # Validation and mapping for legacy or simple tool_input if tool_args is missing
+                if not tool_args and "tool_input" in decision:
+                    # Fallback for older model outputs or simple strings
+                    tool_input = decision["tool_input"]
+                    if tool_name == "python_repl":
+                        tool_args = {"code": tool_input}
+                    elif tool_name == "list_dir":
+                        tool_args = {"path": tool_input or "."}
+                    elif tool_name in ["read_file", "fast_answer"]:
+                        tool_args = {"path": tool_input} if tool_name == "read_file" else {"query": tool_input}
+                    else:
+                        tool_args = {"query": tool_input}
 
                 llm_response = json.dumps({
                     "tool": tool_name,
-                    "kwargs": kwargs
+                    "kwargs": tool_args
                 })
                 
                 with console.status(f"[bold magenta]Executing {tool_name}...") as status:
