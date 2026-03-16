@@ -1,6 +1,7 @@
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from llama_cpp import Llama
+from sentence_transformers import SentenceTransformer
 from huggingface_hub import hf_hub_download
 from config import Config
 import logging
@@ -29,8 +30,8 @@ class LocalLLMService:
         
         self.planner_model = None
         
+        
         self.embedding_model = None
-        self.embedding_tokenizer = None
         
         self._initialized = True
         logger.info("LocalLLMService initialized (models not yet loaded)")
@@ -88,22 +89,14 @@ class LocalLLMService:
             raise
 
     def _load_embedding(self):
-        """Loads Qwen/Qwen3-VL-Embedding-2B"""
+        """Loads sentence-transformers/all-MiniLM-L6-v2"""
         if self.embedding_model is not None:
             return
 
         logger.info(f"Loading embedding model: {Config.local_embedding_model}")
         
         try:
-            # Embedding models usually don't need 8-bit as they are smaller, 
-            # but user requested any optimization.
-            self.embedding_tokenizer = AutoTokenizer.from_pretrained(Config.local_embedding_model, trust_remote_code=True)
-            self.embedding_model = AutoModelForCausalLM.from_pretrained(
-                Config.local_embedding_model,
-                device_map="auto",
-                trust_remote_code=True,
-                torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32
-            )
+            self.embedding_model = SentenceTransformer(Config.local_embedding_model, device='cpu')
             logger.info("Embedding model loaded successfully")
         except Exception as e:
             logger.error(f"Failed to load embedding model: {e}")
@@ -147,12 +140,7 @@ class LocalLLMService:
     def embed(self, text: str) -> List[float]:
         self._load_embedding()
         
-        inputs = self.embedding_tokenizer(text, return_tensors="pt").to(self.embedding_model.device)
-        with torch.no_grad():
-            outputs = self.embedding_model(**inputs, output_hidden_states=True)
-            # Use the mean of last hidden state or specialized embedding head if available
-            # Qwen3-VL-Embedding might have a specific way to extract embeddings
-            embeddings = outputs.hidden_states[-1].mean(dim=1).squeeze().tolist()
+        embeddings = self.embedding_model.encode(text).tolist()
             
         return embeddings
 

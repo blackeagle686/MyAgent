@@ -24,7 +24,7 @@ class Config:
     # Local LLMs
     local_thinker_model: str = "Qwen/Qwen2.5-3B-Instruct"
     local_planner_model: str = "Qwen/Qwen2.5-Coder-3B-Instruct-GGUF"
-    local_embedding_model: str = "Qwen/Qwen3-VL-Embedding-2B"
+    local_embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     
     # Agent config
     top_k: int = 3
