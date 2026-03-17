@@ -49,11 +49,7 @@ class ChromaVectorDB(BaseVectorDB):
         except Exception as e:
             logger.error(e)
 
-    def query(
-        self,
-        query:str,
-        top_k:int= Config.top_k
-    ):
+    def query(self, query:str, top_k:int= Config.top_k):
         try:
             return self.collection.query(
                 query_texts=[query],
@@ -62,7 +58,6 @@ class ChromaVectorDB(BaseVectorDB):
         except Exception as e:
             logger.error(e)
             return []
-
 
     def delete(self, ids):
         try:

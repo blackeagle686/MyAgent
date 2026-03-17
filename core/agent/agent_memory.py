@@ -28,10 +28,7 @@ from config import Config
 logger = logging.getLogger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Shared helpers
-# ---------------------------------------------------------------------------
-
 def _to_vec(encoder, text: str) -> list:
     """Encode *text* and always return a plain Python list."""
     tensor = encoder.encode(text)
@@ -55,10 +52,7 @@ def _chroma_rows(results: dict) -> List[Dict[str, Any]]:
     return [{"doc": d, "meta": m} for d, m in zip(docs, metas)]
 
 
-# ---------------------------------------------------------------------------
 # MemoryCell — a single unit of long-term semantic memory
-# ---------------------------------------------------------------------------
-
 @dataclass
 class MemoryCell:
     content: str
@@ -89,10 +83,7 @@ class MemoryCell:
         return cosine_similarity(self.vec, vec)
 
 
-# ---------------------------------------------------------------------------
 # MemoryStore — semantic long-term memory backed by ChromaDB
-# ---------------------------------------------------------------------------
-
 @dataclass
 class MemoryStoreConfig:
     similarity_threshold: float = Config.similarity_threshold
@@ -135,10 +126,7 @@ class MemoryStore:
         )
         self._worker_thread.start()
 
-    # ------------------------------------------------------------------
     # Public API
-    # ------------------------------------------------------------------
-
     def add(self, content: str, metadata: Optional[Dict[str, Any]] = None) -> str:
         """Encode, store, and asynchronously link a new memory."""
         cell = MemoryCell(
@@ -180,10 +168,7 @@ class MemoryStore:
         memories = self.retrieve(query, top_k)
         return "\n".join(m.get("summary") or m.get("content", "") for m in memories)
 
-    # ------------------------------------------------------------------
     # Internal
-    # ------------------------------------------------------------------
-
     def _link_worker(self) -> None:
         """Background thread: link each new cell to its nearest neighbours."""
         while True:
@@ -203,10 +188,7 @@ class MemoryStore:
                 self._link_queue.task_done()
 
 
-# ---------------------------------------------------------------------------
 # Trajectory step + Experience — episodic memory building blocks
-# ---------------------------------------------------------------------------
-
 @dataclass
 class TrajectoryStep:
     thought: str
@@ -249,10 +231,7 @@ class Experience:
         )
 
 
-# ---------------------------------------------------------------------------
 # ExperienceMemory — episodic memory backed by ChromaDB
-# ---------------------------------------------------------------------------
-
 @dataclass
 class ExperienceMemoryConfig:
     collection_name: str = "agent_experiences"

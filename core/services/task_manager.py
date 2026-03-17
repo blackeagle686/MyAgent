@@ -17,10 +17,7 @@ from typing import Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 
-# ---------------------------------------------------------------------------
 # Status enum — eliminates bare string literals scattered across the codebase
-# ---------------------------------------------------------------------------
-
 class TaskStatus(str, Enum):
     PENDING  = "pending"
     RUNNING  = "running"
@@ -28,10 +25,7 @@ class TaskStatus(str, Enum):
     FAILED   = "failed"
 
 
-# ---------------------------------------------------------------------------
 # Task dataclass
-# ---------------------------------------------------------------------------
-
 @dataclass
 class Task:
     prompt: str
@@ -51,22 +45,15 @@ class Task:
     def can_retry(self) -> bool:
         return self.retry_count < self.max_retries
 
-
-# ---------------------------------------------------------------------------
 # TaskManager
-# ---------------------------------------------------------------------------
-
 class TaskManager:
     """Thread-safe task registry with priority + dependency scheduling."""
 
     def __init__(self) -> None:
         self._tasks: Dict[str, Task] = {}
         self._lock = threading.Lock()
-
-    # ------------------------------------------------------------------
+        
     # Adding tasks
-    # ------------------------------------------------------------------
-
     def add(self, task: Task) -> None:
         with self._lock:
             self._tasks[task.id] = task
@@ -76,10 +63,7 @@ class TaskManager:
             for task in tasks:
                 self._tasks[task.id] = task
 
-    # ------------------------------------------------------------------
     # Querying
-    # ------------------------------------------------------------------
-
     def get(self, task_id: str) -> Optional[Task]:
         return self._tasks.get(task_id)
 
@@ -95,10 +79,7 @@ class TaskManager:
     @property
     def failed(self)    -> List[Task]: return self.by_status(TaskStatus.FAILED)
 
-    # ------------------------------------------------------------------
     # Scheduling
-    # ------------------------------------------------------------------
-
     def next_task(self) -> Optional[Task]:
         """Return the highest-priority pending task whose dependencies are met."""
         with self._lock:
@@ -118,10 +99,7 @@ class TaskManager:
             for dep in task.depends_on
         )
 
-    # ------------------------------------------------------------------
     # State transitions
-    # ------------------------------------------------------------------
-
     def start(self, task_id: str) -> None:
         self._set_status(task_id, TaskStatus.RUNNING)
 
@@ -140,15 +118,12 @@ class TaskManager:
             for k, v in kwargs.items():
                 setattr(task, k, v)
 
-    # ------------------------------------------------------------------
     # Summary
-    # ------------------------------------------------------------------
-
     def summary(self) -> Dict[str, int]:
         return {
             "total":   len(self._tasks),
             "pending": len(self.pending),
             "running": len(self.running),
             "done":    len(self.completed),
-            "failed":  len(self.failed),
+            "failed":  len(self.failed),    
         }

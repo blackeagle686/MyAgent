@@ -30,7 +30,7 @@ echo "           U U"
 echo ""
 echo "        >>> MyAgent <<<"
 echo ""
-) | lolcat -a -d 3
+) | lolcat -a -d 7
 ''')
 
     os.system('toilet -f mono12 -F metal "MY AGENT" | lolcat -a')
@@ -57,7 +57,7 @@ def main():
         # setup mock side effects for the LLM if mocking
         # This is just a basic example for mock mode
         from core.services.llm_service import client
-        client.generate = MagicMock()
+        client.generate = MagicMock()   
         client.generate.side_effect = [
             "problem_type: general\ndifficulty: easy\nneeds_tools: no\nstrategy: direct_answer", # Thinker analysis
             "[]", # Thinker tasks
@@ -73,20 +73,20 @@ def main():
         print(f"❌ Error: Could not import agent components. Ensure you are in the project root. {e}")
         sys.exit(1)
 
-    print(f"\n🚀 Initializing BrainAgent...")
+    print(f"\n😇 Initializing BrainAgent...")
     agent = BrainAgent(sys_prompt="You are a helpful and intelligent AI assistant.")
     
-    print(f"🤖 Agent is thinking about: '{args.prompt}'")
+    print(f"🐥 Agent is thinking about: '{args.prompt}'")
     print("-" * 40)
     
     try:
         final_answer = agent_loop(agent, args.prompt, max_steps=args.steps)
         print("\n" + "="*60)
-        print("✅ FINAL ANSWER:")
+        print("🐣 FINAL ANSWER:")
         print(final_answer)
         print("="*60 + "\n")
     except Exception as e:
-        print(f"❌ Error during agent execution: {e}")
+        print(f"💔 Error during agent execution: {e}")
         if args.verbose:
             import traceback
             traceback.print_exc()
