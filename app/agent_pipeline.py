@@ -20,6 +20,7 @@ Your tasks:
 3 generate descriptive analysis
 4 suggest improvements
 """
+
         self.agent: Optional[BrainAgent] = None
         # chat memory storage
         self.memory: Dict[str, List[Dict]] = {}
