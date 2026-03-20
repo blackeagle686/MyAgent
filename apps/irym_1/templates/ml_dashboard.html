@@ -1,0 +1,569 @@
+{% extends "base.html" %}
+
+{% block style %}
+        <style>
+        /* Layout */
+        </style>
+{% endblock %}
+
+
+{% block content %}
+    <div id="ml-dashboard-wrapper" class="mt-4">
+
+        <!-- Tabs Nav -->
+        <ul class="nav nav-tabs mb-3" id="mlTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="shape-tab" data-bs-toggle="tab" data-bs-target="#shape" type="button" role="tab">Shape</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="columns-tab" data-bs-toggle="tab" data-bs-target="#columns" type="button" role="tab">Columns</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="prediction-tab" data-bs-toggle="tab" data-bs-target="#prediction" type="button" role="tab">Prediction</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="dtypes-tab" data-bs-toggle="tab" data-bs-target="#dtypes" type="button" role="tab">Data Types</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="head-tab" data-bs-toggle="tab" data-bs-target="#head" type="button" role="tab">Head</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tail-tab" data-bs-toggle="tab" data-bs-target="#tail" type="button" role="tab">Tail</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="sample-tab" data-bs-toggle="tab" data-bs-target="#sample" type="button" role="tab">Sample</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="nulls-tab" data-bs-toggle="tab" data-bs-target="#nulls" type="button" role="tab">Nulls</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="duplicates-tab" data-bs-toggle="tab" data-bs-target="#duplicates" type="button" role="tab">Duplicates</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab">Info</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab">Description</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="mlsettings-tab" data-bs-toggle="tab" data-bs-target="#mlsettings" type="button" role="tab">ML Settings</button>
+            </li>
+        </ul>
+
+        <!-- Tabs Content -->
+        <div class="tab-content" id="mlTabsContent">
+            <!-- Shape Tab -->
+            <div class="tab-pane fade show active" id="shape" role="tabpanel">
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <span class="fw-bold"><i class="bi bi-braces"></i> Shape:</span>
+                        <span class="badge bg-info text-dark fs-6">{{ meta.shape }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columns Tab -->
+            <div class="tab-pane fade" id="columns" role="tabpanel">
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-header bg-dark text-white"><i class="bi bi-table"></i> Columns</div>
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for col in meta.columns %}
+                                <span class="badge bg-primary p-2">{{ col }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prediction Tab -->
+            <div class="tab-pane fade" id="prediction" role="tabpanel">
+                <div class="m-3">
+                    <h2>Prediction Form</h2>
+                    <form method="post" id="ml-dashboard-form" class="mt-4" style="max-height:80vh; overflow-x:auto;">
+                                                <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">
+                                    <i class="bi bi-bullseye"></i> Target Column: 
+                                    <span class="badge bg-secondary">{{ meta.target_column }}</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <h4 class="mt-4"><i class="bi bi-pencil-square"></i> Enter values:</h4>
+                        <div class="row">
+                            {% for col, dtype in meta.dtypes %}
+                                {% if col != meta.target_column %}
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">{{ col }} ({{ dtype }})</label>
+                                        {% if dtype == "int64" or dtype == "float64" %}
+                                            <input type="number" step="any" class="form-control" name="{{ col }}" placeholder="Enter {{ col }}">
+                                        {% else %}
+                                            <input type="text" class="form-control" name="{{ col }}" placeholder="Enter {{ col }}">
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-lightning-charge-fill"></i> Predict
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    {% if prediction %}
+                        <div id="ml-dashboard-result" class="alert alert-info mt-4 d-flex align-items-center">
+                            <i class="bi bi-check2-circle me-2"></i> Prediction Result: <strong>{{ prediction }}</strong>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Dtypes Tab -->
+            <div class="tab-pane fade" id="dtypes" role="tabpanel">
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-header bg-dark text-white"><i class="bi bi-diagram-2"></i> Data Types</div>
+                    <ul class="list-group list-group-flush">
+                        {% for col, dtype in meta.dtypes.items %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ col }}
+                                <span class="badge bg-success">{{ dtype }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Head Tab -->
+            <div class="tab-pane fade" id="head" role="tabpanel">
+                <h4><i class="bi bi-arrow-up-circle"></i> Head</h4>
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                {% for col in meta.columns %}
+                                    <th>{{ col }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in meta.head %}
+                                <tr>
+                                    {% for value in row %}
+                                        <td>{{ value }}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tail Tab -->
+            <div class="tab-pane fade" id="tail" role="tabpanel">
+                <h4><i class="bi bi-arrow-down-circle"></i> Tail</h4>
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                {% for col in meta.columns %}
+                                    <th>{{ col }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in meta.tail %}
+                                <tr>
+                                    {% for value in row %}
+                                        <td>{{ value }}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Sample Tab -->
+            <div class="tab-pane fade" id="sample" role="tabpanel">
+                <div class="card mb-4">
+                    <div class="card-header bg-dark text-white"><i class="bi bi-layout-three-columns"></i> Sample</div>
+                    <div class="card-body table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    {% for col in meta.columns %}
+                                        <th>{{ col }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in meta.sample %}
+                                    <tr>
+                                        {% for value in row %}
+                                            <td>{{ value }}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nulls Tab -->
+            <div class="tab-pane fade" id="nulls" role="tabpanel">
+                <div class="card mb-4">
+                    <div class="card-header bg-dark text-white"><i class="bi bi-exclamation-triangle"></i> Nulls</div>
+                    <ul class="list-group list-group-flush">
+                        {% for col, null_count in meta.nulls %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ col }}
+                                <span class="badge bg-danger rounded-pill">{{ null_count }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Duplicates Tab -->
+            <div class="tab-pane fade" id="duplicates" role="tabpanel">
+                <div class="card mb-4">
+                    <div class="card-header bg-dark text-white"><i class="bi bi-layers"></i> Duplicates</div>
+                    <div class="card-body">
+                        <span class="badge bg-warning text-dark fs-6">{{ meta.duplicates }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Tab -->
+            <div class="tab-pane fade" id="info" role="tabpanel">
+                <div class="card mb-4">
+                    <div class="card-header bg-dark text-white"><i class="bi bi-info-circle"></i> Info</div>
+                    <div class="card-body" style="max-height: 250px; overflow-y: auto;">
+                        <pre class="mb-0">{{ meta.info }}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description Tab -->
+            <div class="tab-pane fade" id="description" role="tabpanel">
+                <div class="card mb-4">
+                    <div class="card-header bg-dark text-white"><i class="bi bi-list-columns"></i> Description</div>
+                    <div class="card-body table-responsive" style="max-height:40vw; overflow-y:auto;">
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Statistic</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for col, stats in meta.description.items %}
+                                    {% for stat, value in stats.items %}
+                                        <tr>
+                                            <td><strong>{{ col }}</strong></td>
+                                            <td>{{ stat }}</td>
+                                            <td>{{ value }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ML Settings Tab -->
+            <div class="tab-pane fade" id="mlsettings" role="tabpanel">
+                <div class="card mb-4">
+                    <div class="card-header bg-dark text-white"><i class="bi bi-gear"></i> ML Settings</div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Scaler: <span class="fw-bold">{{ meta.scaller }}</span></li>
+                        <li class="list-group-item">Normalizer: <span class="fw-bold">{{ meta.normalier }}</span></li>
+                        <li class="list-group-item">Encoder: <span class="fw-bold">{{ meta.encoder }}</span></li>
+                        <li class="list-group-item">Task: <span class="fw-bold">{{ meta.task }}</span></li>
+                        <li class="list-group-item">Algorithm: <span class="fw-bold">{{ meta.algorithm }}</span></li>
+                        <li class="list-group-item">Target Column: <span class="fw-bold text-primary">{{ meta.target_column }}</span></li>
+                    </ul>
+                </div>
+            </div>
+
+
+
+        </div>
+
+    </div>
+{% endblock %}
+
+
+
+
+{# {% block content %}
+<div id="ml-dashboard-wrapper " class=" mt-4">
+
+    <div class="card shadow-sm mb-4" style="border: none; border-radius: 16px; overflow: hidden;">
+        <div class="card-body text-center p-4" 
+            style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); 
+                    color: var(--light-color); 
+                    border-radius: 16px;">
+            
+            <!-- Title -->
+            <h2 class="mb-3 fw-bold" style="font-size: 1.8rem;">
+                <i class="bi bi-speedometer2 me-2"></i> ML Dashboard
+            </h2>
+            
+            <!-- Buttons -->
+            <div class="d-flex justify-content-center gap-3">
+                <a href=""#"" 
+                class="btn custom-btn-back">
+                <i class="bi bi-arrow-left-circle me-1"></i> Back to Analysis
+                </a>
+
+                <a href="#" 
+                class="btn custom-btn-new">
+                <i class="bi bi-plus-circle me-1"></i> New ML Model
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shape -->
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <span class="fw-bold"><i class="bi bi-braces"></i> Shape:</span>
+            <span class="badge bg-info text-dark fs-6">{{ meta.shape }}</span>
+        </div>
+    </div>
+
+    <!-- Columns -->
+    <div class="card mb-3 shadow-sm">
+        <div class="card-header bg-dark text-white"><i class="bi bi-table"></i> Columns</div>
+        <div class="card-body">
+            <div class="d-flex flex-wrap gap-2">
+                {% for col in meta.columns %}
+                    <span class="badge bg-primary p-2">{{ col }}</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+<!-- Prediction Form -->
+<div class="m-5">
+    <h2>Prediction Form</h2>
+    <form method="post" id="ml-dashboard-form" class="mt-4" style="max-height:80vh; overflow-x:auto;">
+        
+        <!-- Target Column Display -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">
+                    <i class="bi bi-bullseye"></i> Target Column: 
+                    <span class="badge bg-secondary">{{ meta.target_column }}</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Input Fields -->
+        <h4 class="mt-4"><i class="bi bi-pencil-square"></i> Enter values:</h4>
+        <div class="row">
+            {% for col, dtype in meta.dtypes %}
+                {% if col != meta.target_column %}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">{{ col }} ({{ dtype }})</label>
+                        {% if dtype == "int64" or dtype == "float64" %}
+                            <input type="number" step="any" class="form-control" name="{{ col }}" placeholder="Enter {{ col }}">
+                        {% else %}
+                            <input type="text" class="form-control" name="{{ col }}" placeholder="Enter {{ col }}">
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- Submit Button -->
+        <div class="row mt-3">
+            <div class="col-md-12">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-lightning-charge-fill"></i> Predict
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Prediction Result -->
+    {% if prediction %}
+        <div id="ml-dashboard-result" class="alert alert-info mt-4 d-flex align-items-center">
+            <i class="bi bi-check2-circle me-2"></i> Prediction Result: <strong>{{ prediction }}</strong>
+        </div>
+    {% endif %}
+</div>
+
+
+
+    <!-- Dtypes -->
+    <div class="card mb-3 shadow-sm">
+        <div class="card-header bg-dark text-white"><i class="bi bi-diagram-2"></i> Data Types</div>
+        <ul class="list-group list-group-flush">
+            {% for col, dtype in meta.dtypes.items %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ col }}
+                    <span class="badge bg-success">{{ dtype }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Head -->
+    <h4><i class="bi bi-arrow-up-circle"></i> Head</h4>
+    <div class="table-responsive mb-4">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    {% for col in meta.columns %}
+                        <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in meta.head %}
+                    <tr>
+                        {% for value in row %}
+                            <td>{{ value }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+
+
+        </table>
+    </div>
+
+    <!-- Tail -->
+    <h4><i class="bi bi-arrow-down-circle"></i> Tail</h4>
+    <div class="table-responsive mb-4">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    {% for col in meta.columns %}
+                        <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in meta.tail %}
+                    <tr>
+                        {% for value in row %}
+                            <td>{{ value }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+
+    <!-- Sample -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white"><i class="bi bi-layout-three-columns"></i> Sample</div>
+        <div class="card-body table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        {% for col in meta.columns %}
+                            <th>{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in meta.sample %}
+                        <tr>
+                            {% for value in row %}
+                                <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Nulls -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white"><i class="bi bi-exclamation-triangle"></i> Nulls</div>
+        <ul class="list-group list-group-flush">
+            {% for col, null_count in meta.nulls %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ col }}
+                    <span class="badge bg-danger rounded-pill">{{ null_count }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Duplicates -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white"><i class="bi bi-layers"></i> Duplicates</div>
+        <div class="card-body">
+            <span class="badge bg-warning text-dark fs-6">{{ meta.duplicates }}</span>
+        </div>
+    </div>
+
+    <!-- Info -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white"><i class="bi bi-info-circle"></i> Info</div>
+        <div class="card-body" style="max-height: 250px; overflow-y: auto;">
+            <pre class="mb-0">{{ meta.info }}</pre>
+        </div>
+    </div>
+
+    <!-- Description -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white"><i class="bi bi-list-columns"></i> Description</div>
+        <div class="card-body table-responsive" style="max-height:40vw; overflow-y:auto;">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Statistic</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for col, stats in meta.description.items %}
+                        {% for stat, value in stats.items %}
+                            <tr>
+                                <td><strong>{{ col }}</strong></td>
+                                <td>{{ stat }}</td>
+                                <td>{{ value }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ML Settings -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white"><i class="bi bi-gear"></i> ML Settings</div>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">Scaler: <span class="fw-bold">{{ meta.scaller }}</span></li>
+            <li class="list-group-item">Normalizer: <span class="fw-bold">{{ meta.normalier }}</span></li>
+            <li class="list-group-item">Encoder: <span class="fw-bold">{{ meta.encoder }}</span></li>
+            <li class="list-group-item">Task: <span class="fw-bold">{{ meta.task }}</span></li>
+            <li class="list-group-item">Algorithm: <span class="fw-bold">{{ meta.algorithm }}</span></li>
+            <li class="list-group-item">Target Column: <span class="fw-bold text-primary">{{ meta.target_column }}</span></li>
+        </ul>
+    </div>
+
+
+</div>
+{% endblock %} #}
+
+
+

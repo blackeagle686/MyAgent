@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="users-container" class="container-fluid mt-4" style="height:100%;">
+  <div class="row justify-content-center mb-3">
+    <div class="col-12 col-lg-10">
+      <h3 id="users-title" style="color:var(--text-color)" class="mb-4 text-center">Users Dashboard</h3>
+
+      <!-- Filters -->
+      <div class="d-flex justify-content-between mb-3">
+        <input type="text" id="searchInput" style="background-image:linear-gradient(45deg, var(--background-color), var(--accent-color));" class="form-control w-50" placeholder="Search by Username or Full Name">
+        <div>
+          <select id="statusFilter" class="form-select d-inline-block w-auto me-2">
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <select id="staffFilter" class="form-select d-inline-block w-auto">
+            <option value="all">All Users</option>
+            <option value="staff">Staff</option>
+            <option value="nonstaff">Non-Staff</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="users-table-container" class="table-responsive">
+        <table id="users-table" class="table table-striped table-bordered text-center align-middle">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Full Name</th>
+              <th>Email</th>
+              <th>Staff</th>
+              <th>Active</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for profile in profiles %}
+            <tr>
+              <td class="username">{{ profile.user.username }}</td>
+              <td class="fullname">{{ profile.user.get_full_name }}</td>
+              <td>{{ profile.display_email }}</td>
+              <td class="staff">{{ profile.user.is_staff }}</td>
+              <td class="active">{{ profile.user.is_active }}</td>
+              <td>
+                <button class="btn btn-primary btn-sm" 
+                        onclick="showUserDetails(
+                          '{{ profile.user.username }}', 
+                          '{{ profile.display_email }}', 
+                          '{{ profile.user.is_staff }}', 
+                          '{{ profile.user.is_active }}', 
+                          '{{ profile.display_image }}', 
+                          '{{ profile.display_age }}', 
+                          '{{ profile.theme }}', 
+                          '{{ profile.language }}', 
+                          '{{ profile.last_active_at }}'
+                        )">
+                  View Details
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- User Details Modal -->
+<div class="modal fade" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="userDetailsModalLabel">User Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="user-details-body">
+        Loading...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+
+function deleteUser(username) {
+    if (!confirm(`Are you sure you want to delete user "${username}"? This cannot be undone.`)) return;
+
+    fetch(`admin/users/delete/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ 'username': username })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('User deleted successfully.');
+            const userModal = bootstrap.Modal.getInstance(document.getElementById('userDetailsModal'));
+            userModal.hide();
+            // إزالة صف المستخدم من الجدول
+            document.querySelectorAll('#users-table tbody tr').forEach(row => {
+                if (row.querySelector('.username').textContent === username) {
+                    row.remove();
+                }
+            });
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(err => alert('Error: ' + err));
+}
+
+// دالة عرض التفاصيل تبقى بس مسؤولة عن عرض البيانات والـ modal
+function showUserDetails(username, email, is_staff, is_active, image, age, theme, language, last_active) {
+    const modalBody = document.getElementById("user-details-body");
+    modalBody.innerHTML = `
+        <div class="text-center mb-3">
+            <img src="${image}" alt="User Image" class="img-thumbnail" style="width:120px;height:120px;object-fit:cover;border-radius:50%;">
+        </div>
+        <p><strong>Username:</strong> ${username}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Age:</strong> ${age}</p>
+        <p><strong>Staff:</strong> ${is_staff}</p>
+        <p><strong>Active:</strong> ${is_active}</p>
+        <p><strong>Theme:</strong> ${theme}</p>
+        <p><strong>Language:</strong> ${language}</p>
+        <p><strong>Last Active:</strong> ${new Date(last_active).toLocaleString()}</p>
+        <div class="text-center mt-3">
+            <button class="btn btn-danger" onclick="deleteUser('${username}')">Delete User</button>
+        </div>
+    `;
+
+    const userModal = new bootstrap.Modal(document.getElementById('userDetailsModal'));
+    userModal.show();
+}
+
+
+// Search and Filters
+document.getElementById('searchInput').addEventListener('keyup', filterTable);
+document.getElementById('statusFilter').addEventListener('change', filterTable);
+document.getElementById('staffFilter').addEventListener('change', filterTable);
+
+function filterTable() {
+    const searchValue = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    const staffFilter = document.getElementById('staffFilter').value;
+
+    const rows = document.querySelectorAll('#users-table tbody tr');
+
+    rows.forEach(row => {
+        const username = row.querySelector('.username').textContent.toLowerCase();
+        const fullname = row.querySelector('.fullname').textContent.toLowerCase();
+        const active = row.querySelector('.active').textContent === "True";
+        const staff = row.querySelector('.staff').textContent === "True";
+
+        let matchesSearch = username.includes(searchValue) || fullname.includes(searchValue);
+        let matchesStatus = (statusFilter === 'all') || 
+                            (statusFilter === 'active' && active) || 
+                            (statusFilter === 'inactive' && !active);
+        let matchesStaff = (staffFilter === 'all') || 
+                           (staffFilter === 'staff' && staff) || 
+                           (staffFilter === 'nonstaff' && !staff);
+
+        row.style.display = (matchesSearch && matchesStatus && matchesStaff) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

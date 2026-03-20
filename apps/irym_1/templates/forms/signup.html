@@ -1,0 +1,165 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Signup Page</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', path='css/light.css') }}" />
+  <style>
+    :root {
+      --primary-color: #A27B5C;      
+      --secondary-color: #3F4E4F;    
+      --accent-color: #DCD7C9;       
+      --text-color: #F5F5F5;         
+      --background-color: #2C3639;   
+      --button-hover: #8C6548;       
+      --shadows: rgba(0, 0, 0, 0.6); 
+    }
+
+    body {
+      background-color: var(--background-color);
+      font-family: 'Segoe UI', sans-serif;
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+    }
+
+    .signup-form {
+      background-image: linear-gradient(45deg, var(--background-color), var(--accent-color));
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px var(--shadows);
+    }
+
+    .signup-form h2 {
+      color: var(--accent-color);
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .form-control {
+      background-color: var(--primary-color);
+      border: 1px solid var(--secondary-color);
+      color: var(--text-color);
+      border-radius: 8px;
+      padding: 0.75rem;
+    }
+
+    .form-control:focus {
+      background-color: var(--primary-color);
+      color: var(--text-color);
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 0.25rem var(--shadows);
+    }
+
+    .form-control::placeholder {
+      color: var(--text-color);
+      opacity: 0.7;
+    }
+
+    .btn-custom {
+      background-color: var(--accent-color);
+      color: var(--text-color);
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem;
+      width: 100%;
+      transition: background 0.3s ease;
+    }
+
+    .btn-custom:hover {
+      background-color: var(--button-hover);
+      color: var(--text-color);
+    }
+
+    a {
+      color: var(--accent-color);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .text-danger {
+      color: #ff6b6b !important;
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <div class="row justify-content-center align-items-center min-vh-100">
+      
+      <!-- Image (hidden on small screens) -->
+      <div class="col-md-6 d-none d-md-block text-center">
+        <img src="{{ url_for('static', path='images/hello5.jpg') }}" 
+             alt="Signup Illustration" 
+             class="img-fluid rounded shadow">
+      </div>
+
+      <!-- Form -->
+      <div class="col-12 col-md-6">
+        <div class="signup-form">
+          <h2>Create Account</h2>
+          <form method="POST" action="#">
+            
+            <div class="row mb-3">
+              <div class="col">
+                {{ form.first_name }}
+                {% if form.first_name.errors %}
+                  <div class="text-danger">{{ form.first_name.errors.0 }}</div>
+                {% endif %}
+              </div>
+              <div class="col">
+                {{ form.last_name }}
+                {% if form.last_name.errors %}
+                  <div class="text-danger">{{ form.last_name.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="mb-3">
+              {{ form.username }}
+              {% if form.username.errors %}
+                <div class="text-danger">{{ form.username.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.email }}
+              {% if form.email.errors %}
+                <div class="text-danger">{{ form.email.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="row mb-3">
+              <div class="col">
+                {{ form.password1 }}
+                {% if form.password1.errors %}
+                  <div class="text-danger">{{ form.password1.errors.0 }}</div>
+                {% endif %}
+              </div>
+              <div class="col">
+                {{ form.password2 }}
+                {% if form.password2.errors %}
+                  <div class="text-danger">{{ form.password2.errors.0 }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <button type="submit" class="btn-custom">Sign Up</button>
+            <div class="text-center mt-3">
+              <p>Already have an account? <a href="#">Login</a></p>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

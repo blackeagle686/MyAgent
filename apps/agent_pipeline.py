@@ -2,8 +2,8 @@
 Agent pipeline for other Apps to connect and use the agent capabilities.
 """
 from typing import Optional, Any, Dict, List
-from ..core.agent.agent_build import BrainAgent
-from ..core.agent.agent_loop import agent_loop
+from core.agent.agent_build import BrainAgent
+from core.agent.agent_loop import agent_loop
 
 class AgentNotBuiltError(Exception):
     pass
@@ -42,19 +42,31 @@ Your tasks:
         agent = self.get_agent()
         history = self.get_chat_memory(chat_id)
 
-        # build context
-        context = {
-            "history":history,
-            "input":input_data}
+        # Build context string since agent_loop expects a string prompt
+        prompt_string = f"User Request:\n{input_data}\n\n"
+        if history:
+            prompt_string += "Conversation History:\n"
+            for msg in history[-5:]:  # Keep the last 5 messages for context
+                prompt_string += f"{msg['role'].capitalize()}: {msg['content']}\n"
 
-        answer = agent_loop(agent,context)
-        # store conversation
+        answer = agent_loop(agent, prompt_string)
+        
+        # Extract raw tool outputs from the completed tasks
+        tool_results = []
+        for t in agent.task_manager.completed:
+            tool_results.append({
+                "task": t.prompt,
+                "result": t.result
+            })
+
+        # Store conversation
         history.append({"role":"user", "content":input_data})
-
         history.append({"role":"assistant", "content":answer})
+
         if answer:
             return {
                 "answer":answer,
+                "tool_results":tool_results,
                 "chat_id":chat_id,
                 "memory_size":len(history)
             }

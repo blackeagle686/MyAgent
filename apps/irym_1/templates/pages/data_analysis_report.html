@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block style %}
+<style>
+    .step-card {
+        border-radius: 15px;
+        border: none;
+        background: var(--low-color);
+        margin-bottom: 2rem;
+        transition: transform 0.3s ease;
+    }
+    .step-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        color: white;
+        border-radius: 15px 15px 0 0 !important;
+        padding: 1rem 1.5rem;
+    }
+    .stats-table {
+        background: var(--cool-color);
+        color: var(--text-color);
+        font-size: 0.9rem;
+    }
+    .viz-container {
+        min-height: 400px;
+        width: 100%;
+        background: var(--zero-color);
+        border-radius: 10px;
+        padding: 1rem;
+    }
+    .metric-badge {
+        font-size: 1.2rem;
+        padding: 0.5rem 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <h1 class="display-4"><i class="bi bi-bar-chart-steps me-3"></i>Analysis Report</h1>
+        <a href="{{ url_for('prompt_room') }}" class="btn btn-outline-light"><i class="bi bi-arrow-left me-2"></i>New Analysis</a>
+    </div>
+
+    <div id="report-content">
+        {% if report_data and report_data.steps %}
+            {% for step in report_data.steps %}
+                <div class="card step-card shadow">
+                    <div class="card-header step-header">
+                        <h3 class="mb-0">Step {{ forloop.counter }}: {{ step.name }}</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if step.name == "Cleaning" %}
+                            <div class="row text-center">
+                                <div class="col-md-3">
+                                    <h5>Initial Shape</h5>
+                                    <span class="badge bg-secondary fs-5">{{ step.info.initial_shape.0 }} x {{ step.info.initial_shape.1 }}</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <h5>Final Shape</h5>
+                                    <span class="badge bg-success fs-5">{{ step.info.final_shape.0 }} x {{ step.info.final_shape.1 }}</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <h5>Missing Before</h5>
+                                    <span class="badge bg-danger fs-5">{{ step.info.missing_before }}</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <h5>Missing After</h5>
+                                    <span class="badge bg-info fs-5">{{ step.info.missing_after }}</span>
+                                </div>
+                            </div>
+
+                        {% elif step.name == "EDA" %}
+                            <h4>Summary Statistics</h4>
+                            <div class="table-responsive mb-4" style="max-height: 400px;">
+                                <table class="table table-bordered stats-table">
+                                    <thead class="table-dark sticky-top">
+                                        <tr>
+                                            <th>Column</th>
+                                            {% for stat in step.data.summary_statistics.mean.keys %}
+                                                <th>{{ stat }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for col, stats in step.data.summary_statistics.items %}
+                                            <tr>
+                                                <td class="fw-bold">{{ col }}</td>
+                                                {% for stat_name, val in stats.items %}
+                                                    <td>{{ val }}</td>
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {% if step.data.visualization %}
+                                <h4>Visualization</h4>
+                                <div id="viz-step-{{ forloop.counter }}" class="viz-container shadow-inner"></div>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        const figData = {{ step.data.visualization|safe }};
+                                        Plotly.newPlot('viz-step-{{ forloop.counter }}', figData.data, figData.layout, {responsive: true});
+                                    });
+                                </script>
+                            {% endif %}
+
+                        {% elif step.name == "ML_Pipeline" %}
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h4>Task: <span class="text-info">{{ step.data.task|title }}</span></h4>
+                                {% if step.data.accuracy %}
+                                    <div class="metric-badge badge bg-success">Accuracy: {{ step.data.accuracy }}</div>
+                                {% elif step.data.rmse %}
+                                    <div class="metric-badge badge bg-warning text-dark">RMSE: {{ step.data.rmse }}</div>
+                                {% elif step.data.silhouette_score %}
+                                    <div class="metric-badge badge bg-info">Silhouette Score: {{ step.data.silhouette_score }}</div>
+                                {% endif %}
+                            </div>
+
+                            {% if step.data.visualization %}
+                                <h5>Result Visualization</h5>
+                                <div id="viz-step-{{ forloop.counter }}" class="viz-container shadow-inner"></div>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        const figData = {{ step.data.visualization|safe }};
+                                        Plotly.newPlot('viz-step-{{ forloop.counter }}', figData.data, figData.layout, {responsive: true});
+                                    });
+                                </script>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-warning text-center">
+                <h3><i class="bi bi-exclamation-triangle me-2"></i>No report data available.</h3>
+                <p>Run an analysis task to see results here.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

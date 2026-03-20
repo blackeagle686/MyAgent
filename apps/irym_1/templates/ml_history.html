@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex">
+    <!-- Main Content -->
+    <main class="flex-grow-1 p-4">
+
+<div class="user-container container">
+    <!-- Recent Analysis Section -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4"> 
+        <h1 class="section-title text-center mb-3 mb-md-0">ML Models History</h1>
+        <a class="nav-link btn btn-primary" href="#">
+            <i class="bi bi-cpu me-1"></i> New ML Model
+        </a>
+    </div>
+
+    <!-- 🔍 Search Bar -->
+    <div class="search-container w-100 mb-4" style="max-width: 500px;">
+        <div class="input-group shadow-sm">
+            <span class="input-group-text bg-light border-0">
+                <i class="bi bi-search"></i>
+            </span>
+            <input type="text" id="modelSearch" class="form-control border-0 shadow-none" placeholder="Search models...">
+            <button class="btn btn-outline-secondary border-0" type="button" id="clearSearch">
+                <i class="bi bi-x-circle"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Models List -->
+    <div class="row" id="modelsList">
+        {% if ml_models %}
+            {% for obj in ml_models %}
+                <div class="col-md-6 col-lg-4 mb-4 model-card">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                        <h5 class="card-title text-center fw-bold p-2 mb-3" 
+                            style="background-color: var(--text-color); color: var(--background-color); border-radius:5px;">
+                            {{ obj.analysis.title }}
+                        </h5>
+                            <p class="card-title">
+                                <span style="padding: 2px; margin-right:5px; background-color: var(--text-color); color:var(--background-color); border-radius:5px;"> description </span>
+                                {{ obj.analysis.description|truncatechars:90 }}...
+                            </p>
+                            <p dir="rtl" class="card-title">{{ obj.uploaded_at }}</p>
+                            <a href=""#"" class="btn btn-primary">Go to Dashboard</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    No analysis yet
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+    </main>
+</div>
+
+<!-- 🔍 JS Search Logic -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.getElementById("modelSearch");
+    const clearBtn = document.getElementById("clearSearch");
+    const modelCards = document.querySelectorAll(".model-card");
+
+    searchInput.addEventListener("input", function() {
+        const query = this.value.toLowerCase();
+        modelCards.forEach(card => {
+            const text = card.innerText.toLowerCase();
+            card.style.display = text.includes(query) ? "block" : "none";
+        });
+    });
+
+    clearBtn.addEventListener("click", () => {
+        searchInput.value = "";
+        modelCards.forEach(card => card.style.display = "block");
+    });
+});
+</script>
+{% endblock %}

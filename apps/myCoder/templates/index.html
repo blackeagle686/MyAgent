@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Coder Assistant</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Code Highlight -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs2015.min.css">
+
+    <link href="/css/style.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+</head>
+
+
+
+<body>
+
+    <!-- ================= Header ================= -->
+    <header class="app-header">
+        <nav class="navbar navbar-expand-lg border-bottom">
+            <div class="container-fluid">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-cpu fs-4" style="color: var(--accent-color);"></i>
+                    <span class="navbar-brand mb-0">My Coder</span>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <button id="toggle-sidebar" class="btn btn-outline-secondary btn-sm me-2">
+                        <i class="bi bi-layout-sidebar-reverse"></i>
+                        <span class="d-none d-md-inline ms-1">Editor</span>
+                    </button>
+                    <button id="theme-toggle" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-sun"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ================= Main Layout ================= -->
+    <main class="app-container">
+        <div class="app-content d-flex">
+
+            <!-- ============ Chat Panel (Main) ============ -->
+            <section id="chat-panel" class="chat-panel flex-grow-1 d-flex flex-column">
+                <div id="chat-container" class="chat-messages flex-grow-1">
+
+                    <!-- Welcome Hero Section -->
+                    <div id="welcome-hero" style="padding:2vw;" class="p-5 welcome-section d-flex flex-column align-items-center justify-content-center text-center p-5">
+                        
+                        <!-- Hero Icon -->
+                        <div class="hero-icon mb-4">
+                            <i class="bi bi-rocket-takeoff-fill display-1 text-accent animate-float"></i>
+                        </div>
+
+                        <!-- Main Title -->
+                        <h1 class="display-4 fw-bold mb-3">Level Up Your Coding with <span class="text-accent">My Coder</span></h1>
+
+                        <!-- Subtitle -->
+                        <p class="lead text-muted mb-5" style="max-width: 600px;">
+                            A smart, secure, and fast coding assistant powered by Qwen-Coder. Write, run, and improve Python code safely in real-time.
+                        </p>
+
+                        <!-- Features -->
+                        <div class="row g-4 w-100 justify-content-center" style="max-width: 900px;">
+                            
+                            <div class="col-md-4">
+                                <div class="feature-card glass-effect p-4 h-100">
+                                    <i class="bi bi-shield-check fs-2 text-success mb-3 d-block"></i>
+                                    <h5>Safe Sandbox</h5>
+                                    <p class="small text-muted mb-0">Execute Python code securely with resource limits and protection.</p>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="feature-card glass-effect p-4 h-100">
+                                    <i class="bi bi-lightning-charge-fill fs-2 text-warning mb-3 d-block"></i>
+                                    <h5>Fast & Responsive</h5>
+                                    <p class="small text-muted mb-0">Optimized Qwen-Coder model delivers quick code suggestions and solutions.</p>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="feature-card glass-effect p-4 h-100">
+                                    <i class="bi bi-window-sidebar fs-2 text-info mb-3 d-block"></i>
+                                    <h5>VS Code Experience</h5>
+                                    <p class="small text-muted mb-0">Full-featured Monaco Editor with syntax highlight and autocomplete.</p>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Suggestions / Call to Action -->
+                        <div class="mt-5 d-flex gap-3 flex-wrap justify-content-center">
+                            <span class="text-muted small w-100 mb-2">Try asking:</span>
+                            <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 suggestion-chip">"Create a Python class for a library"</button>
+                            <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 suggestion-chip">"Explain list comprehensions"</button>
+                            <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 suggestion-chip">"How to use abstraction in Python?"</button>
+                        </div>
+
+                    </div>
+
+                    <!-- Messages will be appended here -->
+
+                </div>
+
+
+                <!-- Loading Indicator (Hidden by default) -->
+                <div id="ai-loading" class="ai-loading d-none">
+                    <div class="typing-indicator">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <span class="ms-2 text-primary small">AI is thinking...</span>
+                </div>
+            </section>
+
+            <!-- ============ Code Sidebar (Collapsible) ============ -->
+            <aside id="code-sidebar" class="code-sidebar glass-effect collapsed">
+                <div class="sidebar-inner d-flex flex-column h-100 p-3">
+                    <!-- Editor Part -->
+                    <div class="editor-section flex-grow-1 d-flex flex-column mb-3">
+                        <div class="section-header d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-code-slash text-success"></i>
+                                <span class="fw-bold small">EDITOR</span>
+                            </div>
+                            <button id="run-btn" class="btn btn-sm btn-success py-0 px-3">
+                                <i class="bi bi-play-fill"></i> Run
+                            </button>
+                        </div>
+                        <div id="monaco-editor" class="flex-grow-1 border rounded"
+                        style="min-height: 400px; background: #1e1e1e;"></div>
+                    </div>
+                    
+
+                    <!-- Output Part (Bottom of Sidebar) -->
+                    <div class="output-section" style="height: 35%;">
+                        <div class="section-header mb-2 d-flex align-items-center gap-2">
+                            <i class="bi bi-terminal text-info"></i>
+                            <span class="fw-bold small">OUTPUT</span>
+                        </div>
+                        <div id="output-content" class="output-panel h-100">
+                            <span class="text-muted small">Waiting for execution...</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+        </div>
+    </main>
+
+    <!-- ================= Footer (Fixed Input) ================= -->
+    <footer class="app-footer">
+        <div class="container-fluid">
+            <div class="input-wrapper mx-auto" style="max-width: 900px;">
+                <div class="input-group glass-effect rounded-pill p-1">
+                    <textarea id="message-input" class="form-control border-0 bg-transparent rounded-pill" rows="1"
+                        placeholder="Type your coding request..."></textarea>
+                    <button id="send-btn" class="btn btn-primary rounded-pill px-4 ms-2">
+                        <i class="bi bi-send"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ================= Scripts ================= -->
+    <script src="/js/script.js"></script>
+</body>
+
+</html>

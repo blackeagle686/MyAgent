@@ -1,0 +1,382 @@
+{% extends "base.html" %}
+
+{% block style %}
+<style>
+  /* ================== ROOT COLORS ================== */
+  :root {
+    --primary-color: #00ADB5;
+    --secondary-color: #393E46;
+    --accent-color: #3A9CA1;
+    --text-color: #EEEEEE;
+    --background-color: #222831;
+    --button-hover: #028A91;
+    --shadows: rgba(0, 0, 0, 0.4);
+    --cool-color: #2D3A3F;
+    --mid-color: #4B686B;
+    --low-color: #617E80;
+    --zero-color: #222831;
+  }
+
+  /* ================== GENERAL BODY ================== */
+  body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  /* ================== UPLOAD BOXES ================== */
+  .upload-box-modern {
+    background: linear-gradient(145deg, var(--cool-color), var(--mid-color));
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .upload-box-modern:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 10px 25px var(--shadows);
+    background: linear-gradient(145deg, var(--accent-color), var(--primary-color));
+  }
+
+  .upload-box-modern h5 {
+    color: var(--text-color);
+    font-weight: 600;
+    transition: color 0.3s ease;
+  }
+
+  .upload-box-modern i {
+    transition: transform 0.3s ease, color 0.3s ease;
+  }
+
+  .upload-box-modern:hover i {
+    transform: rotate(20deg) scale(1.2);
+    color: var(--text-color);
+  }
+
+  /* ================== BUTTONS ================== */
+  .btn-gradient {
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    color: var(--text-color);
+    border: none;
+    transition: all 0.3s ease;
+  }
+
+  .btn-gradient:hover {
+    background: linear-gradient(90deg, var(--accent-color), var(--primary-color));
+    box-shadow: 0 6px 15px var(--shadows);
+    transform: translateY(-3px) scale(1.05);
+  }
+
+  /* ================== TABLES ================== */
+  .table,
+  .table-bordered {
+    width: 100vw;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 12px;
+    background-color: var(--cool-color);
+    color: var(--text-color);
+    box-shadow: 0 4px 20px var(--shadows);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .table thead {
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    color: var(--text-color);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: sticky;
+    top: 0;
+    z-index: 3;
+  }
+
+  .table th,
+  .table td {
+    padding: 12px 18px;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .table tbody tr {
+    background-color: var(--mid-color);
+    transition: all 0.3s ease, transform 0.2s ease;
+  }
+
+  .table tbody tr:nth-child(even) {
+    background-color: var(--low-color);
+  }
+
+  .table tbody tr:hover {
+    background-color: var(--accent-color);
+    transform: scale(1.02);
+  }
+
+  .table td:empty {
+    background-color: var(--zero-color);
+  }
+
+  /* ================== DATASET PREVIEW CARD ================== */
+  #dataset-preview .card {
+    background: linear-gradient(145deg, var(--cool-color), var(--mid-color));
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 8px 20px var(--shadows);
+    transition: all 0.3s ease;
+  }
+
+  #dataset-preview .card:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 12px 30px var(--shadows);
+  }
+
+  #dataset-preview h4 {
+    color: var(--primary-color);
+    font-weight: 700;
+    margin-bottom: 15px;
+  }
+
+  #dataset-preview ul li {
+    background-color: var(--cool-color);
+    margin-bottom: 5px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    transition: background 0.3s ease;
+  }
+
+  #dataset-preview ul li:hover {
+    background-color: var(--accent-color);
+    color: var(--text-color);
+  }
+
+  /* ================== PROMPT TEXTAREA ================== */
+  .textarea-container {
+    position: relative;
+    transition: transform 0.3s ease;
+  }
+
+  .textarea-container textarea {
+    width: 100%;
+    height: 120px;
+    /* default height */
+    background-color: var(--mid-color);
+    color: var(--text-color);
+    border: none;
+    border-radius: 12px;
+    padding: 15px;
+    font-size: 1rem;
+    resize: vertical;
+    transition: all 0.4s ease-in-out;
+    /* smooth transition for height and shadow */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Smooth height expansion and glow on focus */
+  .textarea-container textarea:focus {
+    outline: none;
+    height: 200px;
+    /* expanded height */
+    box-shadow: 0 0 20px var(--primary-color), 0 0 30px rgba(0, 173, 181, 0.4);
+    background-color: var(--low-color);
+  }
+
+  /* Slight floating effect on hover */
+  .textarea-container textarea:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.35);
+  }
+
+  /* ================== SUBMIT BUTTON ================== */
+  .prompt-room-submit-btn {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    background: var(--primary-color);
+    color: var(--text-color);
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Glow and scale effect on hover */
+  .prompt-room-submit-btn:hover {
+    background: var(--accent-color);
+    transform: translateY(-50%) scale(1.1) rotate(-1deg);
+    box-shadow: 0 10px 25px var(--shadows), 0 0 15px var(--primary-color);
+  }
+
+  /* Smooth pulse animation for the button */
+  @keyframes pulseGlow {
+    0% {
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3), 0 0 10px var(--primary-color);
+    }
+
+    50% {
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 0 20px var(--primary-color);
+    }
+
+    100% {
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3), 0 0 10px var(--primary-color);
+    }
+  }
+
+  .prompt-room-submit-btn {
+    animation: pulseGlow 3s infinite;
+  }
+
+  /* ================== RESPONSIVE ================== */
+  @media (max-width: 768px) {
+    .upload-box-modern i {
+      font-size: 3rem;
+    }
+
+    .textarea-container textarea {
+      font-size: 0.9rem;
+    }
+
+    .prompt-room-submit-btn {
+      padding: 8px 16px;
+      font-size: 0.9rem;
+    }
+
+    .table th,
+    .table td {
+      padding: 8px 12px;
+    }
+  }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="d-flex mt-5">
+  <main class="flex-grow-1 p-4">
+    {% if danger_message %}
+    <div class="col-md-12 mb-12" style="max-height:20vw;">
+      <div class="border p-4 rounded bg-danger text-center">
+        <h2 class="text-warning">{{ danger_message }}</h2>
+        <h6 class="text-light">{{ error_message }}</h6>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Form -->
+    <form method="POST" action="/irym1/analyze-ui" enctype="multipart/form-data">
+      <div class="row mb-4 prompt-room-files-types-container g-4">
+
+        {# CSV Upload #}
+        <div class="col-md-4">
+          <div class="upload-box-modern text-center p-4 shadow-sm rounded">
+            <i class="bi bi-filetype-csv display-4 mb-3" style="color: var(--accent-color);"></i>
+            <h5 class="mb-3">Upload CSV</h5>
+            <label class="btn btn-gradient w-100">
+              <i class="bi bi-upload me-2"></i> Choose File
+              <input id="csv-files" type="file" name="upload" accept=".csv" hidden>
+            </label>
+          </div>
+        </div>
+
+        {# Excel Upload #}
+        <div class="col-md-4">
+          <div class="upload-box-modern text-center p-4 shadow-sm rounded">
+            <i class="bi bi-file-earmark-excel display-4 mb-3" style="color: var(--accent-color);"></i>
+            <h5 class="mb-3">Upload Excel</h5>
+            <label class="btn btn-gradient w-100">
+              <i class="bi bi-upload me-2"></i> Choose File
+              <input id="excel-files" type="file" name="upload" accept=".xlsx,.xls" hidden>
+            </label>
+          </div>
+        </div>
+
+        {# JSON Upload #}
+        <div class="col-md-4">
+          <div class="upload-box-modern text-center p-4 shadow-sm rounded">
+            <i class="bi bi-filetype-json display-4 mb-3" style="color: var(--accent-color);"></i>
+            <h5 class="mb-3">Upload JSON</h5>
+            <label class="btn btn-gradient w-100">
+              <i class="bi bi-upload me-2"></i> Choose File
+              <input id="json-files" type="file" name="upload" accept=".json" hidden>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="prompt-room-file-uploaded-preview">
+        {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Prompt Textarea -->
+      <div class="mb-0 mt-5" style="margin-bottom:150px;">
+        <label class="form-label" for="promptInput">Enter your instructions</label>
+        <div class="textarea-container">
+          <div class="prompt-room-prompt-container">
+            <textarea name="prompt" id="promptInput"
+              placeholder="What do you want me to do with this data? (e.g. 'Analyze this data quickly. Just do a simple EDA.')"></textarea>
+          </div>
+          <button type="submit" class="btn btn-warning prompt-room-submit-btn">Start Analysis</button>
+        </div>
+      </div>
+    </form>
+
+    <div id="dataset-preview"></div>
+  </main>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const fileInputs = document.querySelectorAll("#csv-files, #excel-files, #json-files");
+    const previewDiv = document.getElementById("dataset-preview");
+
+    fileInputs.forEach(input => {
+      input.addEventListener("change", () => {
+        if (!input.files.length) return;
+
+        let formData = new FormData();
+        formData.append("file", input.files[0]);
+
+        fetch("#", {
+          method: "POST",
+          body: formData,
+          headers: { "X-CSRFToken": "{{ csrf_token }}" },
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.error) {
+              previewDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            } else {
+              previewDiv.innerHTML = `
+                        <div class="card shadow p-4 mb-4" style="background-color: var(--background-color); color: var(--text-color);">
+                            <h4 class="mb-3 d-flex align-items-center">
+                                <i class="bi bi-table me-2" style="color: var(--accent-color);"></i>
+                                Uploaded Dataset Preview
+                            </h4>
+                            <ul class="list-group mb-3">
+                                <li class="list-group-item" style="background-color: var(--background-color); color: var(--text-color);"><strong>Name:</strong> ${data.name}</li>
+                                <li class="list-group-item" style="background-color: var(--background-color); color: var(--text-color);"><strong>Type:</strong> ${data.type}</li>
+                                <li class="list-group-item" style="background-color: var(--background-color); color: var(--text-color);"><strong>Size:</strong> ${data.size}</li>
+                            </ul>
+                            <div class="table-responsive" style="max-height:95vw; max-width:90vw; overflow-x:auto; overflow-y:hidden;">
+
+                                <h5 class="mt-5">The Head of ${data.name}</h5>
+                                <table class="table table-bordered table-sm" style="max-width: max-content; background-color: var(--background-color); color: var(--text-color);">
+                                    ${data.head}
+                                </table>
+                            </div>
+                        </div>
+                    `;
+            }
+          })
+          .catch(err => {
+            previewDiv.innerHTML = `<div class="alert alert-danger">Upload failed: ${err}</div>`;
+          });
+      });
+    });
+  });
+</script>
+{% endblock %}

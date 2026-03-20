@@ -1,0 +1,153 @@
+@import url('main.css');
+
+#ml-dashboard-wrapper {
+    background: linear-gradient(135deg, var(--background-color), var(--cool-color));
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0px 8px 20px var(--shadows);
+    color: var(--text-color);
+}
+/* Headings */
+#ml-dashboard-wrapper h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+    margin-bottom: 1rem;
+}
+/* Tables */
+.table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+    background: var(--low-color);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0px 4px 14px rgba(0,0,0,0.15);
+}
+.table th {
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    color: var(--light-color);
+    padding: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+.table td {
+    background: linear-gradient(135deg, var(--background-color), var(--mid-color));
+    color: var(--text-color);
+    padding: 0.6rem;
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: 0.3s ease;
+}
+.table td:hover {
+    background: linear-gradient(135deg, var(--accent-color), var(--button-hover));
+    color: var(--light-color);
+    transform: scale(1.03);
+}
+/* List */
+.list-group-item {
+    background: linear-gradient(90deg, var(--low-color), var(--mid-color));
+    color: var(--text-color);
+    padding: 0.6rem;
+    border-radius: 6px;
+    margin: 0.2rem 0;
+}
+/* Form */
+#ml-dashboard-form {
+    background: linear-gradient(145deg, var(--low-color), var(--background-color));
+    padding: 1.8rem;
+    border-radius: 14px;
+    box-shadow: 0px 8px 18px rgba(0,0,0,0.1);
+}
+#ml-dashboard-form label {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+#ml-dashboard-form input[type="text"],
+#ml-dashboard-form input[type="number"] {
+    border: none;
+    border-radius: 10px;
+    padding: 0.6rem;
+    background: rgba(0,0,0,0.05);
+    color: var(--text-color);
+    width: 100%;
+    margin-bottom: 1rem;
+    transition: 0.3s ease;
+}
+#ml-dashboard-form input:focus {
+    outline: none;
+    background: rgba(0,0,0,0.08);
+    box-shadow: 0 0 8px var(--accent-color);
+}
+/* Button */
+#ml-dashboard-form button {
+    background: linear-gradient(90deg, var(--accent-color), var(--primary-color));
+    color: var(--light-color);
+    font-weight: 700;
+    padding: 0.8rem 1.6rem;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+#ml-dashboard-form button:hover {
+    background: linear-gradient(90deg, var(--button-hover), var(--accent-color));
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0px 6px 14px rgba(0,0,0,0.2);
+}
+/* Prediction Result */
+#ml-dashboard-result {
+    border-left: 6px solid var(--highlight-color);
+    background: linear-gradient(90deg, var(--low-color), var(--mid-color));
+    font-weight: 700;
+    font-size: 1.2rem;
+    border-radius: 10px;
+    color: var(--text-color);
+    padding: 1rem;
+    margin-top: 1rem;
+}
+/* Cards */
+.card-body, .card-header {
+    background: var(--background-color) !important;
+    color: var(--text-color) !important;
+}
+table td, li {
+color: var(--text-color) !important;
+}
+table td {
+max-width: max-content !important;  
+}
+.bi{
+    color: var(--text-color) !important;
+}
+.custom-btn-back {
+    background: linear-gradient(90deg, var(--accent-color), var(--button-hover));
+    color: var(--light-color);
+    font-weight: 600; 
+    padding: 0.7rem 1.4rem; 
+    border-radius: 12px; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+.custom-btn-back:hover {
+    background: linear-gradient(90deg, var(--button-hover), var(--accent-color));
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+}
+
+.custom-btn-new {
+    background: linear-gradient(90deg, var(--highlight-color), var(--accent-color));
+    color: var(--light-color);
+    font-weight: 600; 
+    padding: 0.7rem 1.4rem; 
+    border-radius: 12px; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+.custom-btn-new:hover {
+    background: linear-gradient(90deg, var(--accent-color), var(--highlight-color));
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+}

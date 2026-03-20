@@ -1,0 +1,828 @@
+:root {
+  --primary-color: #064232;        /* Main brand color */
+  --secondary-color: #568F87;      /* Sidebar / secondary surfaces */
+  --accent-color: #F5BABB;         /* Accents, highlights */
+  --text-color: #064232;           /* Dark text on light bg */
+  --background-color: #FFF5F2;    /* Page background */
+  --button-hover: #568F87;         /* Hover state */
+  --shadows: rgba(0, 0, 0, 0.2);  /* Softer shadow */
+  --cool-color: #568F87;           /* Borders / muted surfaces */
+  --mid-color: #064232;            /* Middle range for cards */
+  --low-color: #064232;            /* Slightly deeper */
+  --zero-color: #064232;           /* Deep background layers */
+  --error-color: #F5BABB;          /* Error / alert color */
+}
+
+
+
+[data-theme="light"] {
+  --primary-color: #1e1e1e;      
+  --secondary-color: #252526;    
+  --accent-color: #007acc;       
+  --text-color: #d4d4d4;         
+  --background-color: #1e1e1e;   
+  --button-hover: #005a9e;       
+  --shadows: rgba(0, 0, 0, 0.7); 
+  
+  --cool-color: #3c3c3c;         
+  --mid-color: #2d2d2d;          
+  --low-color: #404040;          
+  --zero-color: #1e1e1e;          /* Error / alert color */
+}
+
+
+
+/* very Good Blue - Black
+[data-theme="burry"] {
+  --primary-color: #1e1e1e;      
+  --secondary-color: #252526;    
+  --accent-color: #007acc;       
+  --text-color: #d4d4d4;         
+  --background-color: #1e1e1e;   
+  --button-hover: #005a9e;       
+  --shadows: rgba(0, 0, 0, 0.7); 
+  
+  --cool-color: #3c3c3c;         
+  --mid-color: #2d2d2d;          
+  --low-color: #404040;          
+  --zero-color: #1e1e1e;         
+}
+
+*/
+
+[data-theme="burry"] {
+  --primary-color: #1E5F74;        /* Main brand color */
+  --secondary-color: #133B5C;      /* Sidebar / secondary surfaces */
+  --accent-color: #FCDAB7;         /* Accents, highlights */
+  --text-color: #FCDAB7;           /* Light text on dark bg */
+  --background-color: #1D2D50;     /* Page background */
+  --button-hover: #133B5C;         /* Hover state */
+  --shadows: rgba(0, 0, 0, 0.35);  /* Softer shadow */
+  --cool-color: #133B5C;           /* Borders / muted surfaces */
+  --mid-color: #1E5F74;            /* Middle range for cards */
+  --low-color: #133B5C;            /* Slightly deeper */
+  --zero-color: #1D2D50;           /* Deep background layers */
+  --error-color: #C0392B;          /* Error / alert color (أحمر ثابت للوضوح) */
+}
+
+
+[data-theme="deep-sea"] {
+  --primary-color: #00ADB5;
+  --secondary-color: #393E46;
+  --accent-color: #3A9CA1;
+  --text-color: #EEEEEE;
+  --background-color: #222831;
+  --button-hover: #028A91;
+  --shadows: rgba(0, 0, 0, 0.4);
+  --cool-color: #2D3A3F;
+  --mid-color: #4B686B;
+  --low-color: #617E80;
+  --zero-color: #222831;
+}
+
+[data-theme="dark"] {
+  --primary-color: #171717;     /* Dark base - modern & bold */
+  --secondary-color: #444444;   /* Medium gray - balanced contrast */
+  --accent-color: #DA0037;      /* Vivid red - strong highlight */
+  --text-color: #EDEDED;        /* Light gray - readable on dark */
+  --background-color: #171717;  /* Deep dark background */
+
+  --button-hover: #444444;      /* Softer hover effect */
+  --shadows: rgba(218, 0, 55, 0.25); /* Red-tinted shadows for depth */
+
+  --cool-color: #DA0037;        /* Accent reused for consistency */
+  --mid-color: #444444;         /* Mid-gray for UI balance */
+  --low-color: #222222;         /* Slightly lighter than background */
+  --zero-color: #171717;        /* Pure dark depth */
+}
+
+[data-theme="ice"] {
+  --background-color: #F5F5F5;   /* خلفية فاتحة */
+  --secondary-color: #F8E7F6;   /* لون ثانوي */
+  --accent-color: #DD88CF;      /* لون مميز */
+  --primary-color: #4B164C;     /* اللون الأساسي (غامق) */
+  --text-color: #222831;        /* لون النصوص */
+  --button-hover: #DD88CF;      /* Hover للأزرار */
+  --shadows: rgba(0, 0, 0, 0.15);
+
+  /* درجات مساعدة من نفس الباليتة */
+  --cool-color: #F8E7F6;
+  --mid-color: #EABBE0;
+  --low-color: #F2DDF0;
+  --zero-color: #FFFFFF;
+}
+
+[data-theme="military"] {
+  --background-color: #FFF9E5;
+  --secondary-color: #DCD0A8;
+  --accent-color: #4A9782;
+  --primary-color: #004030;
+  --text-color: #00261A;
+  --button-hover: #3A7F6D;
+  --shadows: rgba(0, 0, 0, 0.2);
+  --cool-color: #D8E6C4;
+  --mid-color: #BFD8AA;
+  --low-color: #EEF6D6;
+  --zero-color: #FFF9E5;
+}
+
+
+/* =================== Global Styles =================== */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    transition: all 0.3s ease;
+}
+/* =================== Navbar =================== */
+/* ================= Navbar Modern Style ================= */
+.navbar {
+  background-image: linear-gradient(45deg, var(--background-color), var(--accent-color)) ! important;
+  box-shadow: 0 4px 12px var(--shadows);
+  padding: 0.6rem 1rem;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Brand Circle Logo */
+.logo-circle {
+  width: 42px;
+  height: 42px;
+  background: var(--primary-color);
+  color: var(--background-color);
+  font-weight: 700;
+  font-size: 1rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.4s ease, box-shadow 0.3s ease;
+  
+}
+
+.logo-circle:hover {
+  transform: rotate(15deg) scale(1.1);
+  box-shadow: 0 0 12px var(--primary-color);
+}
+
+/* Navbar Links */
+.navbar .nav-link {
+  color: var(--text-color);
+  font-weight: 500;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.navbar .nav-link:hover {
+  color: var(--background-color) !important;
+  background: var(--text-color) !important;
+  transform: translateY(-2px);
+}
+
+/* Admin Badge */
+.navbar .badge {
+  font-size: 0.7rem;
+  border-radius: 8px;
+  padding: 0.3rem 0.6rem;
+  background: var(--accent-color) !important;
+  color: var(--background-color) !important;
+}
+.navbar .badge:hover {
+  color: var(--background-color)!important;
+  background: var(--text-color)!important;
+  transform: translateY(-2px);
+}
+/* Toggle Button */
+#toggleSidebar {
+  background: var(--primary-color);
+  color: var(--background-color);
+  border-radius: 10px;
+  padding: 0.5rem 0.8rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+#toggleSidebar i {
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+}
+
+#toggleSidebar:hover {
+  background: var(--button-hover);
+  transform: scale(1.05);
+}
+
+#toggleSidebar:hover i {
+  transform: rotate(90deg);
+}
+
+/* =================== Sidebar =================== */
+/* -------------------------
+   Fixed Sidebar CSS (Optimized)
+   ------------------------- */
+
+.sidebar {
+    width: 320px;
+    height: 100vh;
+    box-sizing: border-box;
+
+    background-color: var(--secondary-color);
+    position: fixed;
+    right: -320px;
+    top: 0;
+    bottom: 0;
+
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 100000;
+    padding: 1.5rem 1rem;
+    transition: right 0.3s ease;
+    border-left: 2px solid var(--accent-color);
+    border-top: 2px solid var(--accent-color);
+    border-radius: 20px;
+}
+
+/* Nav scroll area */
+.sidebar ul.nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex: 1 1 auto;
+    overflow-y: auto;
+}
+
+/* Scrollbar (lighter) */
+.sidebar ul.nav::-webkit-scrollbar {
+    width: 6px;
+}
+.sidebar ul.nav::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 3px;
+}
+
+/* Show / Hide */
+.sidebar.show,
+.sidebar.open {
+    right: 0;
+}
+
+/* Nav items */
+.sidebar ul.nav li.nav-item {
+    margin-bottom: 0.8rem;
+}
+
+.sidebar ul.nav li.nav-item a.nav-link.btn {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    background-image: linear-gradient(45deg, var(--accent-color), var(--secondary-color));
+    color: var(--text-color);
+    font-weight: 500;
+    transition: all 0.25s ease;
+}
+
+.sidebar ul.nav li.nav-item a.nav-link.btn:hover {
+    background: var(--highlight-color);
+    color: var(--background-color);
+    transform: translateX(-4px);
+}
+
+/* Active */
+.sidebar ul.nav li.nav-item a.nav-link.btn.active {
+    background: var(--highlight-color);
+    color: var(--background-color);
+}
+
+/* Icons */
+.sidebar ul.nav li.nav-item a.nav-link.btn i {
+    font-size: 1.1rem;
+    margin-right: 0.6rem;
+}
+
+/* Bottom section */
+.sidebar-bottom-elements {
+    margin-top: auto;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--cool-color);
+}
+
+/* Theme Selector */
+.sidebar select.form-select {
+    background: var(--primary-color);
+    color: var(--text-color);
+    border: 1px solid var(--accent-color);
+    border-radius: 8px;
+    padding: 0.5rem;
+    font-weight: 500;
+}
+
+/* Logout Button */
+.sidebar .logout-btn {
+    background: var(--error-color);
+    border: none;
+    color: #fff;
+    transition: all 0.25s ease;
+}
+.sidebar .logout-btn:hover {
+    background: #a71e2a;
+    transform: translateX(-4px);
+}
+
+/* Overlay */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.35);
+    z-index: 998;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s ease;
+}
+.sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar { width: 100%; right: -100%; }
+}
+
+/* Note: removed slideInFromRight transform animation on .sidebar.open to avoid transform side-effects */
+/* If you want an entrance animation, rely on the `right` transition, or animate an inner wrapper instead. */
+
+/* =================== Logo Circle =================== */
+.logo-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--accent-color);
+    color: var(--background-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 12px var(--shadows);
+    transition: all 0.3s ease;
+}
+
+.logo-circle:hover {
+    transform: scale(1.1) rotate(10deg);
+    box-shadow: 0 6px 20px var(--shadows);
+}
+
+/* =================== Scroll Buttons =================== */
+.scroll-btn {
+    position: fixed;
+    right: 20px;
+    background-color: var(--accent-color);
+    color: var(--background-color);
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px var(--shadows);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    font-size: 1.2rem;
+}
+
+#goTopBtn {
+    bottom: 80px;
+}
+
+#goBottomBtn {
+    bottom: 20px;
+}
+
+.scroll-btn:hover {
+    background-color: var(--button-hover);
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 6px 16px var(--shadows);
+}
+
+/* =================== Footer =================== */
+footer {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    padding: 2rem;
+    text-align: center;
+    border-top: 2px solid var(--accent-color);
+    margin-top: 3rem;
+}
+
+footer .logo-circle {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+    margin-right: 1rem;
+}
+
+footer a {
+    color: var(--text-color);
+    margin-right: 1rem;
+    font-size: 1.3rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+footer a:hover {
+    color: var(--accent-color);
+    transform: translateY(-2px);
+}
+
+/* =================== Form Elements =================== */
+.sidebar select.form-select {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    border: 1px solid var(--cool-color);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    padding: 0.5rem;
+}
+
+.sidebar select.form-select:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 8px var(--shadows);
+    outline: none;
+}
+
+input[type="text"], 
+input[type="email"], 
+input[type="password"], 
+select, 
+textarea {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    border: 1px solid var(--cool-color);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    width: 100%;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+input:focus, 
+select:focus, 
+textarea:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 10px var(--shadows);
+    outline: none;
+    background-color: var(--zero-color);
+}
+
+::placeholder {
+    color: var(--highlight-color);
+    opacity: 0.7;
+}
+
+/* =================== Buttons =================== */
+button, 
+.btn {
+    background-color: var(--accent-color);
+    color: var(--background-color);
+    border: 1px solid var(--accent-color);
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px var(--shadows);
+    font-size: 0.95rem;
+    text-decoration: none;
+    display: inline-block;
+}
+
+button:hover, 
+.btn:hover {
+    background-color: var(--button-hover);
+    border-color: var(--button-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px var(--shadows);
+}
+
+button:active, 
+.btn:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 6px var(--shadows);
+}
+
+button:disabled,
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* =================== Typography =================== */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-color);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.75rem; }
+h4 { font-size: 1.5rem; }
+h5 { font-size: 1.25rem; }
+h6 { font-size: 1rem; }
+
+p {
+    color: var(--text-color);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+/* =================== Textarea =================== */
+textarea {
+    min-height: 120px;
+    resize: vertical;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--cool-color);
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+/* =================== Cards =================== */
+.card {
+    background-color: var(--primary-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px var(--shadows);
+    color: var(--text-color);
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--cool-color);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px var(--shadows);
+}
+
+/* =================== Responsive Design =================== */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        left: -100%;
+    }
+    
+    .navbar {
+        padding: 0.5rem 1rem;
+    }
+    
+    .logo-circle {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+    
+    .scroll-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 1rem;
+    }
+    
+    #goTopBtn {
+        bottom: 70px;
+    }
+    
+    footer {
+        padding: 1.5rem 1rem;
+    }
+}
+
+/* =================== Utility Classes =================== */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
+.mt-4 { margin-top: 1.5rem; }
+.mt-5 { margin-top: 3rem; }
+
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+.mb-5 { margin-bottom: 3rem; }
+
+.p-1 { padding: 0.25rem; }
+.p-2 { padding: 0.5rem; }
+.p-3 { padding: 1rem; }
+.p-4 { padding: 1.5rem; }
+.p-5 { padding: 3rem; }
+
+.d-flex { display: flex; }
+.d-none { display: none; }
+.d-block { display: block; }
+
+.justify-content-center { justify-content: center; }
+.align-items-center { align-items: center; }
+
+.w-100 { width: 100%; }
+.h-100 { height: 100%; }
+
+
+
+/* 
+=================================================================================
+                              Tabs Start
+=================================================================================
+*/
+
+/* =========================
+   Tabs Content Box
+========================= */
+.tab-content {
+  background-image: linear-gradient(45deg, var(--background-color), var(--secondary-color));
+  border: 1px solid var(--accent-color);
+  border-radius: 0 0 12px 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px var(--shadows);
+  font-size: 15px;
+  line-height: 1.6;
+  transition: all 0.3s ease-in-out;
+}
+
+/* =========================
+   Tabs Container
+========================= */
+#outputTabs {
+  border-bottom: none; /* remove default border */
+  margin-bottom: 1rem;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 0.5rem;
+}
+
+/* =========================
+   Scrollbar Styling
+========================= */
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-color);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border-radius: 10px;
+  border: 2px solid var(--background-color);
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--button-hover);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-color) var(--background-color);
+}
+
+/* =========================
+                              Tabs End
+=================================================================================
+*/
+
+table th,
+table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border: 1px solid #ddd;
+  white-space: nowrap;       /* يمنع تكسير النص */
+  width: max-content;        /* يخلي العمود ياخد حجم المحتوى */
+  max-width: 100%;           /* بس ما يخرجش برا الجدول */
+}
+
+::placeholder{
+    color: var(--text-color) !important;
+    opacity: 0.8 !important;
+    font-size: 1rem;
+}
+
+
+/* Search Container */
+.search-container {
+  margin: 1rem auto;
+}
+
+/* Input Group */
+.search-container .input-group {
+  border: 1.5px solid var(--secondary-color);
+  border-radius: 12px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  height: 4rem;
+}
+
+.search-container .input-group:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Input */
+.search-container input {
+  border: none;
+  outline: none;
+  font-size: 0.95rem;
+  padding: 10px 12px;
+}
+
+/* Input group text (search icon) */
+.search-container .input-group-text {
+  background: transparent;
+  border: none;
+  color: var(--secondary-color);
+  font-size: 1.2rem;
+}
+
+/* Clear button */
+.search-container #clearSearch {
+  background: transparent;
+  color: var(--secondary-color);
+  font-size: 1.2rem;
+  border-radius: 0;
+  transition: color 0.3s ease;
+}
+
+.search-container #clearSearch:hover {
+  color: var(--primary-color);
+}
+
+#searchInput {
+  height: 4rem;
+}
+
+#modelSearch {
+  height: 4rem;
+}
+
+.btn:hover{
+  color:var(--text-color) !important;
+}
+
+.btn {
+  color: var(--background-color) !important;
+}
+
+#toggleSidebar{
+  color:var(--text-color) !important;
+}
+
+nav{
+  background-image: linear-gradient(45deg, var(--background-color), var(--secondary-color)) !important;
+}
+
+.sidebar nav{
+  background-color: #00261a00 !important;
+  border-radius: 20px !important;
+  padding: 2vw !important;
+  margin: 0 !important;
+}
+
+#toggleSidebar{
+  background-color: var(--background-color) !important;
+  color: var(--text-color) !important;
+
+}
+
+

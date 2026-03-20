@@ -6,6 +6,7 @@ from .search import DeepSearchTool, RagSearchTool
 from .file_system import FileReadTool, FileWriteTool, ListDirTool, FileDeleteTool, CreateDirTool
 from .fast_answer import FastAnswerTool
 from .api_tool import HTTPRequestTool, APIClientTool
+from .data_analysis import DataAnalysisTool
 from .code_security_decorator import (
     safe_execution,
     restrict_path,
@@ -39,6 +40,9 @@ __all__ = [
     # API tools
     "HTTPRequestTool",
     "APIClientTool",
+    
+    # Data Analysis
+    "DataAnalysisTool",
     
     # Security decorators
     "safe_execution",

@@ -10,3 +10,10 @@ class UserPrompt(BaseModel):
     temperature: float = 0.2
     max_iterations: int = 10
     mode: Optional[str] = "analysis"
+
+class DataAnalysisRequest(BaseModel):
+    prompt: str
+    file_path: str
+    task: str = "full_pipeline" # eda, train_model, predict, full_pipeline
+    target_column: Optional[str] = None
+    ml_task: Optional[str] = None # classification, regression, clustering

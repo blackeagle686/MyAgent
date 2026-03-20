@@ -1,3 +1,7 @@
+pandas
+openpyxl
+sqlalchemy
+plotly
 openai
 chromadb
 sentence-transformers

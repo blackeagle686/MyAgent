@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex">
+    <!-- Main Content -->
+    <main class="flex-grow-1 p-4">
+
+<div class="user-container container mt-5">
+    <!-- Recent Analysis Section -->
+    <div class="d-flex flex-column align-items-center mb-4">
+        <h1 class="section-title text-center mb-3">Data Science History</h1>
+        <a class="nav-link btn btn-outline-primary mb-3" href="{{ url_for('prompt_room') }}">
+            <i class="bi bi-plus-square me-2"></i> New Analysis
+        </a>        
+
+        <!-- 🔍 Modern Search Bar -->
+        <div class="search-container w-100" style="max-width: 500px;">
+            <div class="input-group shadow-sm rounded">
+                <span class="input-group-text bg-light border-0">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" id="searchInput" class="form-control border-0" 
+                       placeholder="Search dashboards by title...">
+                <button class="btn btn-outline-secondary border-0" type="button" id="clearSearch">
+                    <i class="bi bi-x-circle"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4" id="dashboardContainer">
+        {% if analyses %}
+            {% for obj in analyses %}
+                <div class="col-md-6 col-lg-4 mb-4 dashboard-card">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-center fw-bold"
+                                style="margin-bottom: 15px; padding: 6px; background-color: var(--text-color); color:var(--background-color); border-radius:5px;">
+                                {{ obj.title }}
+                            </h5>
+                            <p class="card-text">
+                                <span style="padding: 2px; margin-right:5px; background-color: var(--text-color); color:var(--background-color); border-radius:5px;">
+                                    Description
+                                </span> 
+                                {{ obj.description|truncatechars:90 }}...
+                            </p>
+                            <p dir="rtl" class="card-text text-muted">{{ obj.created_at }}</p>
+                            <a href=""#"" class="btn btn-primary">Go to Dashboard</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    No analysis yet
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+    </main>
+</div>
+
+<!-- 🔥 Search Script -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.getElementById("searchInput");
+    const clearBtn = document.getElementById("clearSearch");
+    const cards = document.querySelectorAll(".dashboard-card");
+
+    function filterCards() {
+        const query = searchInput.value.toLowerCase();
+        let anyVisible = false;
+
+        cards.forEach(card => {
+            const title = card.querySelector(".card-title").innerText.toLowerCase();
+            if (title.includes(query)) {
+                card.style.display = "block";
+                anyVisible = true;
+            } else {
+                card.style.display = "none";
+            }
+        });
+
+        // ✅ لو مفيش نتائج
+        const noResult = document.getElementById("noResult");
+        if (!anyVisible) {
+            if (!noResult) {
+                const div = document.createElement("div");
+                div.id = "noResult";
+                div.className = "col-12 text-center text-muted mt-4";
+                div.innerHTML = `<i class="bi bi-exclamation-circle"></i> No dashboards found`;
+                document.getElementById("dashboardContainer").appendChild(div);
+            }
+        } else {
+            if (noResult) noResult.remove();
+        }
+    }
+
+    // 🔍 Events
+    searchInput.addEventListener("keyup", filterCards);
+    clearBtn.addEventListener("click", () => {
+        searchInput.value = "";
+        filterCards();
+    });
+});
+</script>
+{% endblock %}

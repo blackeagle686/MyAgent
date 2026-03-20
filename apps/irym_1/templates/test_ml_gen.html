@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block style %}
+
+{% endblock  %}
+
+{% block content %}
+    <div class="container pt-5 mb-5" id="ml-container">
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <!-- Title -->
+            <h2 id="ml-header" class="d-flex align-items-center gap-2 m-0">
+                <i class="bi bi-cpu"></i> 
+                <span>ML Model Creator</span>  
+
+                <small class="" style="color:var(--accent-color)">Powered by 
+                    <i class="bi bi-lightning-charge-fill "></i> AI
+                </small>
+            </h2>
+
+            <!-- Buttons -->
+            <div class="d-flex flex-column gap-2">
+                <a href="#" class="btn btn-primary">
+                    <i class="bi bi-speedometer2 me-1"></i> Dashboards
+                </a>
+                <a href="#" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i> New Analysis
+                </a>
+            </div>
+        </div>
+
+
+        <form method="post" id="ml-form" class="shadow p-4 rounded">
+                        {% if is_new %}
+                <!-- Dataset selection -->
+                <div class="mb-3">
+                    <label for="analyses_meta" class="form-label text-white">
+                        <i class="bi bi-database-check me-2"></i> Available Datasets:
+                    </label>
+                    <select id="analyses_meta" name="analysis_id" class="form-select ">
+                        <option value="">-- Select a dataset --</option>
+                        {% for ana_meta in analyses %}
+                            <option value="{{ ana_meta.id }}">{{ ana_meta.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+            <script>
+                document.getElementById("analyses_meta").addEventListener("change", function() {
+                    let id = this.value;
+                    if (!id) return;
+
+                    fetch(`/ml_models/ml_gen_conf/${id}/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                console.error(data.error);
+                                return;
+                            }
+                            document.getElementById("ml-task").value = data.task || "";
+                            document.getElementById("ml-algorithm").value = data.algorithm || "";
+                            document.getElementById("ml-target").value = data.target || "";
+                            document.getElementById("ml-shape").value = data.data_shape || "";
+                            document.getElementById("ml-prompt").value = "" || "";
+                        })
+                        .catch(err => console.error("Fetch error:", err));
+                });
+            </script>
+
+            {% endif %}
+
+            <!-- Notes -->
+            <div class="mb-3">
+                <label for="ml-prompt" class="form-label">
+                    <i class="bi bi-journal-text"></i> Any Notes:
+                </label>
+                <input type="text" id="ml-prompt" name="prompt" class="form-control"
+                    value="" placeholder="Write any additional notes here...">
+            </div>
+
+            <!-- Task -->
+            <div class="mb-3">
+                <label for="ml-task" class="form-label">
+                    <i class="bi bi-list-task"></i> Task:
+                </label>
+                <input type="text" id="ml-task" name="task" class="form-control"
+                    value="{{ gen_ml_conf.task|default('') }}" placeholder="e.g. classification, regression">
+            </div>
+
+            <!-- Algorithm -->
+            <div class="mb-3">
+                <label for="ml-algorithm" class="form-label">
+                    <i class="bi bi-diagram-3"></i> Algorithm:
+                </label>
+                <input type="text" id="ml-algorithm" name="algorithm" class="form-control"
+                    value="{{ gen_ml_conf.algorithm|default('') }}" placeholder="e.g. logistic regression, random forest">
+            </div>
+
+            <!-- Target -->
+            <div class="mb-3">
+                <label for="ml-target" class="form-label">
+                    <i class="bi bi-bullseye"></i> Target Column:
+                </label>
+                <input type="text" id="ml-target" name="target" class="form-control"
+                    value="{{ gen_ml_conf.target|default('') }}" placeholder="e.g. class, price, label">
+            </div>
+
+            <!-- Data Shape -->
+            <div class="mb-3">
+                <label for="ml-shape" class="form-label">
+                    <i class="bi bi-grid-3x3-gap"></i> Data Shape (rows, cols):
+                </label>
+                <input type="text" id="ml-shape" name="data_shape" class="form-control"
+                    value="{{ gen_ml_conf.data_shape|default('') }}" placeholder="e.g. 5000, 10">
+            </div>
+
+            <button type="submit" id="ml-submit" class="btn btn-dark">
+                <i class="bi bi-gear"></i> Generate ML Code
+            </button>
+        </form>
+    </div>
+
+
+{% endblock %}

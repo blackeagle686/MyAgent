@@ -4,7 +4,11 @@ from .agent_actor import AgentActor
 from .agent_planner import Thinker
 from ..services.task_manager import TaskManager
 from ..services.llm_service import client, encoder_client
-from ..tools import ToolRegistry, PythonREPLTool, PythonExecuteTool, BashExecuteTool, RagSearchTool, FileReadTool, FileWriteTool, ListDirTool, FastAnswerTool
+from ..tools import (
+    ToolRegistry, PythonREPLTool, PythonExecuteTool, BashExecuteTool, 
+    RagSearchTool, FileReadTool, FileWriteTool, ListDirTool, FastAnswerTool,
+    DataAnalysisTool
+)
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +28,8 @@ class BrainAgent:
                 FastAnswerTool(),
                 FileReadTool(),
                 FileWriteTool(),
-                ListDirTool()
+                ListDirTool(),
+                DataAnalysisTool()
             ]
             
         self.registry = ToolRegistry(tools=tools)
