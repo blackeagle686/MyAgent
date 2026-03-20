@@ -2,7 +2,6 @@
 Agent pipeline for other Apps to connect and use the agent capabilities.
 """
 from typing import Optional, Any, Dict, List
-
 from ..core.agent.agent_build import BrainAgent
 from ..core.agent.agent_loop import agent_loop
 
