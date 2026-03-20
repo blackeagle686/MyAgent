@@ -18,3 +18,5 @@ accelerate
 bitsandbytes
 llama-cpp-python
 huggingface_hub
+maturin
+pytest

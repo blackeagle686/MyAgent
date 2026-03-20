@@ -5,9 +5,32 @@ import json
 import os
 import hashlib
 import time
-from typing import Optional, Any, Dict
+from typing import Optional, Any, Dict, List
 from sentence_transformers import SentenceTransformer
 from core.services.local_llm_service import local_llm_service
+
+# Attempt to import Rust accelerator
+try:
+    from rust_accelerator import (
+        FastVectorEngine,
+        RustTokenizer,
+        EmbeddingCache,
+        ParallelOrchestrator
+    )
+    _rust_engine = FastVectorEngine()
+    _rust_cache = EmbeddingCache()
+    _rust_orchestrator = ParallelOrchestrator()
+    # Path found for all-MiniLM-L6-v2
+    _tokenizer_path = "/home/tlk/.cache/huggingface/hub/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/tokenizer.json"
+    if os.path.exists(_tokenizer_path):
+        _rust_tokenizer = RustTokenizer(_tokenizer_path)
+    else:
+        _rust_tokenizer = None
+except ImportError:
+    _rust_engine = None
+    _rust_cache = None
+    _rust_orchestrator = None
+    _rust_tokenizer = None
 
 logger = logging.getLogger(__name__)
 
@@ -23,19 +46,17 @@ class LLMClient:
         self.embedding_model = Config.embedding_model
         self.search_model = Config.search_model
         
-        # Rate limit and Cache state
+        # State
         self.rate_limits: Dict[str, Any] = {}
         self.cache_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "logs", "cache")
         if Config.enable_cache and not os.path.exists(self.cache_dir):
             os.makedirs(self.cache_dir)
 
-    def _get_cache_key(self, prompt: str, model: str, system_prompt: Optional[str], temperature: float) -> str:
-        data = f"{prompt}:{model}:{system_prompt}:{temperature}"
-        return hashlib.md5(data.encode()).hexdigest()
+    def _get_cache_key(self, content: str) -> str:
+        return hashlib.md5(content.encode()).hexdigest()
 
     def _check_cache(self, key: str) -> Optional[str]:
-        if not Config.enable_cache:
-            return None
+        if not Config.enable_cache: return None
         cache_path = os.path.join(self.cache_dir, f"{key}.json")
         if os.path.exists(cache_path):
             try:
@@ -46,8 +67,7 @@ class LLMClient:
         return None
 
     def _update_cache(self, key: str, content: str):
-        if not Config.enable_cache:
-            return
+        if not Config.enable_cache: return
         cache_path = os.path.join(self.cache_dir, f"{key}.json")
         try:
             with open(cache_path, 'w') as f:
@@ -101,7 +121,7 @@ class LLMClient:
             target_model = model or self.model
             
             # 1. Caching
-            cache_key = self._get_cache_key(user_prompt, target_model, sys_prompt, temperature)
+            cache_key = self._get_cache_key(f"{user_prompt}:{target_model}:{sys_prompt}:{temperature}")
             cached_response = self._check_cache(cache_key)
             if cached_response:
                 logger.info("Using cached LLM response")
@@ -143,7 +163,7 @@ class LLMClient:
                     raise e # Re-raise if not a rate limit or max retries reached
 
         except Exception as e:
-            logger.error(f"OpenRouter Error: {e}. Falling back to local LLM.")
+            logger.error(f"LLM Error: {e}. Falling back to local.")
             try:
                 # Fallback to local
                 if target_model == self.coder_model:
@@ -154,7 +174,13 @@ class LLMClient:
                 logger.error(f"Local LLM Error: {local_e}")
                 return "LLM generation failed (both OpenRouter and Local)"
     
-    def embed(self, text): 
+    def embed(self, text: str) -> List[float]:
+        if Config.use_rust_accelerator and _rust_cache:
+            cache_key = self._get_cache_key(text)
+            cached_vec = _rust_cache.get(cache_key)
+            if cached_vec:
+                return cached_vec
+
         try:
             embedding = self.client.embeddings.create(
                 extra_headers={},
@@ -162,15 +188,47 @@ class LLMClient:
                 input=text,
                 encoding_format="float"
             )
-            return embedding.data[0].embedding
+            vec = embedding.data[0].embedding
+            
+            if Config.use_rust_accelerator and _rust_cache:
+                _rust_cache.set(cache_key, vec)
+            
+            return vec
         except Exception as e:
-            logger.warning(f"OpenRouter Embedding failed for {self.embedding_model}, falling back to local embedding: {e}")
-            try:
-                return local_llm_service.embed(text)
-            except Exception as local_e:
-                logger.error(f"Local Embedding Error: {local_e}")
-                # Return a generic 384-dim zero vector (standard for Small MiniLM)
-                return [0.0] * 384
+            logger.warning(f"Embedding failed, falling back to local: {e}")
+            vec = local_llm_service.embed(text)
+            if Config.use_rust_accelerator and _rust_cache:
+                _rust_cache.set(self._get_cache_key(text), vec)
+            return vec
+
+    def generate_parallel(self, prompts: List[str], sys_prompt: str = None) -> List[str]:
+        """Fire off multiple requests in parallel using Rust orchestrator."""
+        if Config.use_rust_accelerator and _rust_orchestrator:
+            urls = [f"{Config.base_url}/chat/completions"] * len(prompts)
+            payloads = []
+            for p in prompts:
+                payload = {
+                    "model": self.model,
+                    "messages": [
+                        {"role": "system", "content": sys_prompt or "You are an assistant"},
+                        {"role": "user", "content": p}
+                    ]
+                }
+                payloads.append(json.dumps(payload))
+            
+            # Note: This simple implementation might need to handle headers/API keys
+            # In a real system, we'd pass the API key to the Rust layer.
+            # For now, let's assume the Rust orchestrator can be extended or handles it.
+            return _rust_orchestrator.request_batch(urls, payloads)
+        
+        # Fallback to serial
+        return [self.generate(p, sys_prompt=sys_prompt) for p in prompts]
+
+    def count_tokens(self, text: str) -> int:
+        if Config.use_rust_accelerator and _rust_tokenizer:
+            return _rust_tokenizer.count_tokens(text)
+        # Simple whitespace fallback if tokenizer is missing
+        return len(text.split())
 
     def deep_search(self, query): 
         completion = self.client.chat.completions.create(

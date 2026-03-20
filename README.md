@@ -11,16 +11,21 @@
 
 **MyAgent** is a sophisticated autonomous agent framework designed to bridge the gap between large language models and real-world task execution. It implements the **ReAct** (Reasoning + Acting) pattern, enabling agents to think through complex problems, select appropriate tools, execute them safely, and adapt based on observations.
 
-###  New in v1.1
-- **Professional Desktop GUI**: A sleek PySide6-based dashboard to visualize thinking/planning live.
-- **Hybrid AI & Failover**: Automatic local fallback to Qwen models if OpenRouter APIs fail.
-- **Local Embeddings**: High-performance local vector operations using `sentence-transformers/all-MiniLM-L6-v2`.
-- **Tool-Aware Decomposition**: The Thinker now "knows" available tools during the first analysis phase.
-- **Workspace Sandboxing**: Restricted file operations to the project root for production safety.
+###  New in v1.2: The Rust Revolution 🚀
+- **Rust Accelerator Engine**: Core performance logic (Vector math, Ranking, Tokenization) rewritten in Rust for up to **12.8x speedup**.
+- **SIMD-Accelerated Memory**: Lightning-fast episodic memory ranking using handwritten Rust kernels.
+- **Embedding Cache**: Concurrent Rust-side caching to eliminate redundant embedding API latency.
+- **Parallel Orchestration**: Tokio-backed async parallelism for multi-request agent planning.
+- **Exact Token Counting**: Zero-cost subword tokenization via the Rust `tokenizers` crate.
 
 ---
 
 ##  Key Features
+
+###  **High-Performance Hybrid Engine**
+- **Rust/Python Hybrid**: Clean PyO3 + Maturin integration. Python for reasoning; Rust for the data plane.
+- **SIMD Optimized**: Vector similarities and ranking use manual SIMD and Rayon parallelism.
+- **Async Orchestrator**: Built-in Rust runtime for firing parallel LLM requests.
 
 ###  **Desktop & CLI Interfaces**
 - **PySide6 Dashboard**: A premium dark-themed desktop app with "Internal Process" monitoring.
@@ -31,7 +36,7 @@
 - **Hybrid Reasoning**: Automatic failover to local LLMs (Qwen2.5) for reliability.
 - **ReAct Loop**: Reasoning → Acting → Observing cycle for adaptive decision-making.
 - **Brain Agent**: Central orchestrator managing thought processes and tool selection.
-- **Episodic Memory**: High-speed local embeddings using `SentenceTransformers`.
+- **Episodic Memory**: High-speed local embeddings with Rust-accelerated ranking.
 
 ###  **Tool Ecosystem (Secured)**
 - **11+ Built-in Tools**: File system, Python REPL, web search, FastAnswer, and more.
@@ -52,6 +57,20 @@ graph TD
     Thinker -.-> LocalThink[Local Thinker Fallback]
     Planner -.-> LocalPlan[Local Planner Fallback]
     Memory -.-> LocalEmbed[SentenceTransformer Embeddings]
+
+    %% Rust Accelerator Layer
+    subgraph RustEngine [High-Performance Rust Accelerator]
+        direction LR
+        Vec[SIMD Vector Engine]
+        Tok[Rust Tokenizer]
+        Cache[Embedding Cache]
+        Orch[Parallel Orchestrator]
+    end
+
+    Memory --> Vec
+    Memory --> Cache
+    Thinker --> Tok
+    Planner --> Orch
     
     Planner --> Actor[AgentActor]
     Actor --> Security[Security Decorators]

@@ -163,10 +163,45 @@ class MemoryStore:
             for r in rows
         ]
 
-    def retrieve_context(self, query: str, top_k: int = 3) -> str:
-        """Convenience wrapper — returns a single joined string."""
+    def rank_context(self, query_vec: list, candidates: List[MemoryCell], top_k: int = 5) -> List[MemoryCell]:
+        """High-speed Rust ranking for re-ranking or filtering memory cells."""
+        from ..utils import _rust_engine
+        if Config.use_rust_accelerator and _rust_engine:
+            import numpy as np
+            target_veclist = [c.vec for c in candidates if c.vec is not None]
+            if not target_veclist: return []
+            
+            targets = np.array(target_veclist, dtype=np.float32)
+            query = np.array(query_vec, dtype=np.float32)
+            
+            # Use Rust ranking
+            ranked_indices = _rust_engine.rank_top_k(query, targets, top_k)
+            return [candidates[idx] for idx, score in ranked_indices]
+        
+        # Fallback to python sort
+        candidates.sort(key=lambda c: c.similarity(query_vec), reverse=True)
+        return candidates[:top_k]
+
+    def retrieve_context(self, query: str, top_k: int = 3, max_tokens: int = 2000) -> str:
+        """
+        Retrieves context and ensures it fits within token limits using 
+        the Rust tokenizer for exact counting.
+        """
         memories = self.retrieve(query, top_k)
-        return "\n".join(m.get("summary") or m.get("content", "") for m in memories)
+        context_parts = []
+        total_tokens = 0
+        
+        for m in memories:
+            text = m.get("summary") or m.get("content", "")
+            # Use Rust tokenizer if available
+            tokens = self.llm.count_tokens(text)
+            if total_tokens + tokens <= max_tokens:
+                context_parts.append(text)
+                total_tokens += tokens
+            else:
+                break
+                
+        return "\n".join(context_parts)
 
     # Internal
     def _link_worker(self) -> None:

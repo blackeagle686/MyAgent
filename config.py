@@ -38,3 +38,6 @@ class Config:
     max_retries: int = 3
     backoff_factor: float = 2.0
     
+    # Rust Accelerator
+    use_rust_accelerator: bool = True
+    
