@@ -245,6 +245,12 @@ class Experience:
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     trajectory: List[TrajectoryStep] = field(default_factory=list)
     summary: Optional[str] = field(default=None, init=False)
+    
+    # Reflection fields
+    success: bool = field(default=True)
+    mistakes: List[str] = field(default_factory=list)
+    lessons: List[str] = field(default_factory=list)
+    rating: int = field(default=10)
 
     def add_step(self, thought: str, tool_call: str, observation: str) -> None:
         self.trajectory.append(
@@ -258,11 +264,16 @@ class Experience:
         body = (
             f"Task: {self.task_prompt}\n\n"
             f"Trajectory:\n{steps_text}\n\n"
-            f"Final Answer: {self.final_answer}"
+            f"Final Answer: {self.final_answer}\n\n"
+            f"Reflection:\n"
+            f"- Success: {self.success}\n"
+            f"- Rating: {self.rating}/10\n"
+            f"- Mistakes: {', '.join(self.mistakes) if self.mistakes else 'None'}\n"
+            f"- Lessons: {', '.join(self.lessons) if self.lessons else 'None'}"
         )
         self.summary = client.generate(
             user_prompt=body,
-            sys_prompt="Summarize this agent trajectory and the key lessons learned in <=100 words",
+            sys_prompt="Summarize this agent trajectory, its success/failure, and the key lessons learned for future improvement in <=120 words",
         )
 
 

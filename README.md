@@ -36,6 +36,7 @@
 - **Hybrid Reasoning**: Automatic failover to local LLMs (Qwen2.5) for reliability.
 - **ReAct Loop**: Reasoning → Acting → Observing cycle for adaptive decision-making.
 - **Brain Agent**: Central orchestrator managing thought processes and tool selection.
+- **Self-Reflection (v1.3)**: Post-task meta-cognition to evaluate success, detect mistakes, and learn lessons.
 - **Episodic Memory**: High-speed local embeddings with Rust-accelerated ranking.
 
 ###  **Tool Ecosystem (Secured)**
@@ -49,37 +50,79 @@
 
 ```mermaid
 graph TD
-    UI[Desktop GUI / Rich CLI] --> Agent[BrainAgent]
-    Agent --> Thinker[Tool-Aware Thinker]
-    Agent --> Planner[Dynamic Planner]
-    Agent --> Memory[Episodic Memory]
-    
-    Thinker -.-> LocalThink[Local Thinker Fallback]
-    Planner -.-> LocalPlan[Local Planner Fallback]
-    Memory -.-> LocalEmbed[SentenceTransformer Embeddings]
+    %% Interface Layer
+    subgraph Interface [Interface Layer]
+        UI[Desktop GUI]
+        CLI[Rich CLI]
+    end
 
-    %% Rust Accelerator Layer
-    subgraph RustEngine [High-Performance Rust Accelerator]
+    %% Core Agent
+    subgraph Core [BrainAgent Core]
+        Agent[BrainAgent Controller]
+        Thinker[Tool-Aware Thinker]
+        Planner[Dynamic Planner]
+        Memory[Episodic Memory]
+    end
+
+    UI --> Agent
+    CLI --> Agent
+
+    Agent --> Thinker
+    Agent --> Planner
+    Agent --> Memory
+
+    %% Fallback Systems
+    subgraph Fallback [Local Fallback Systems]
+        LocalThink[Local Thinker]
+        LocalPlan[Local Planner]
+        LocalEmbed[Local Embeddings]
+    end
+
+    Thinker -. fallback .-> LocalThink
+    Planner -. fallback .-> LocalPlan
+    Memory -. fallback .-> LocalEmbed
+
+    %% Rust Engine
+    subgraph Rust [Rust Performance Engine]
         direction LR
         Vec[SIMD Vector Engine]
         Tok[Rust Tokenizer]
         Cache[Embedding Cache]
-        Orch[Parallel Orchestrator]
+        Orch[Parallel Executor]
     end
 
     Memory --> Vec
     Memory --> Cache
     Thinker --> Tok
     Planner --> Orch
-    
-    Planner --> Actor[AgentActor]
-    Actor --> Security[Security Decorators]
-    Security --> Tools[Tool Registry]
-    
-    Tools --> FST[File System]
-    Tools --> REPL[Python REPL]
-    Tools --> SRCH[RAG Search]
-    Tools --> FAST[Fast Answer]
+
+    %% Execution Layer
+    subgraph Execution [Execution Layer]
+        Actor[Agent Actor]
+        Security[Security Layer]
+        Reflector[Self Reflection]
+    end
+
+    Planner --> Actor
+    Actor --> Security
+    Actor -. feedback .-> Reflector
+    Reflector --> Memory
+
+    %% Tools
+    subgraph ToolsLayer [Tool Ecosystem]
+        Tools[Tool Registry]
+        FST[File System]
+        REPL[Python REPL]
+        SRCH[RAG Search]
+        FAST[Fast Answer Engine]
+    end
+
+    Security --> Tools
+
+    Tools --> FST
+    Tools --> REPL
+    Tools --> SRCH
+    Tools --> FAST
 ```
 
 ---
@@ -136,10 +179,26 @@ python3 run_agent.py "What is the capital of Egypt?" --verbose
 
 ---
 
+##  Project Flow: The Self-Improvement Loop
+
+MyAgent operates on a sophisticated **Observe → Reflect → Learn → Improve** cycle. Here is how a request travels through the system:
+
+1.  **Decomposition (Thinker)**: The `Thinker` analyzes the request and breaks it into multiple manageable sub-tasks. It uses **Rust-based tokenization** for exact context management.
+2.  **Adaptive Planning (Planner)**: The `Planner` decides the next best action step-by-step. If a high-tier API fails, it automatically fails over to **Local Fallback Systems**.
+3.  **Secure Execution (Actor)**: The `Actor` executes tools through a `Security Layer`. Every operation is monitored, caught if it fails, and returned as an observation.
+4.  **Episodic Storage**: The full trajectory is recorded. **SIMD-accelerated vectors** rank past experiences to see if the agent has faced similar tasks before.
+5.  **Self-Reflection (Reflector)**: Once the task is finished, the `Reflector` analyzes the entire process. It identifies mistakes, gives a performance rating, and generates **actionable lessons**.
+6.  **Continuous Improvement**: These lessons are injected into the agent's memory, ensuring that the next time a similar request arrives, the agent is smarter and faster.
+
+---
+
 ##  Core Components
 
 ### **Hybrid Intelligence & Fallback**
 The agent uses a **Hybrid LLM Stack**. By default, it uses powerful models via OpenRouter (e.g., Llama 3.1 405B). If an API error occurs, it automatically switches to local models (Qwen2.5-3B for Thinking, Qwen2.5-Coder for Planning) to ensure continuous operation.
+
+### **Self-Reflection & Improvement**
+MyAgent now includes an integrated **Self-Reflection System** that triggers after every task completion. It evaluates its own performance, identifies mistakes, and generates **Lessons Learned** which are stored in its episodic memory. These lessons are then used to inform and improve future decision-making, creating a continuous improvement loop.
 
 ### **Local Embeddings**
 VDB operations and episodic memory now use `sentence-transformers/all-MiniLM-L6-v2` locally on **CPU**, providing consistent performance and 384-dimensional vector support without external dependencies.

@@ -105,8 +105,30 @@ def agent_loop(agent, user_prompt: str, max_steps: int = 10, ui_callback: Option
                 with console.status(f"[bold magenta]Executing {tool_name}...") as status:
                     observation = agent.act(llm_response)
                 
+                # Check for hardened evidence and terminal visualizations in JSON output
+                display_obs = observation
+                terminal_graphics = []
+                try:
+                    obs_data = json.loads(observation)
+                    # 1. Evidence
+                    if "summary_evidence" in obs_data:
+                        evidence = obs_data["summary_evidence"]
+                        display_obs = f"[bold yellow]EVIDENCE: {evidence}[/bold yellow]\n\n{observation}"
+                    
+                    # 2. Terminal Visualizations
+                    if "steps" in obs_data:
+                        for step in obs_data["steps"]:
+                            if "data" in step and isinstance(step["data"], dict) and "terminal_viz" in step["data"]:
+                                terminal_graphics.append(step["data"]["terminal_viz"])
+                except:
+                    pass
+
                 _notify_ui("observation", {"tool": tool_name, "observation": observation})
-                console.print(Panel(f"[bold white]{observation}[/bold white]", title=f"[bold magenta]Observation ({tool_name})[/bold magenta]", border_style="magenta"))
+                console.print(Panel(f"[bold white]{display_obs}[/bold white]", title=f"[bold magenta]Observation ({tool_name})[/bold magenta]", border_style="magenta"))
+                
+                # Print terminal graphics if any
+                for viz in terminal_graphics:
+                    console.print(viz)
                 
                 # Record step in experience
                 exp.add_step(
@@ -144,7 +166,20 @@ def agent_loop(agent, user_prompt: str, max_steps: int = 10, ui_callback: Option
         _notify_ui("final_answer", {"answer": final_answer})
         exp.final_answer = final_answer
         
-        # 5. Learn
+        # 5. Reflect & Learn
+        with console.status("[bold blue]Agent is reflecting on its performance...") as status:
+            agent.reflector.reflect(exp)
+            
+        success_color = "green" if exp.success else "red"
+        symbol = "✓" if exp.success else "✗"
+        console.print(Panel(
+            f"[bold {success_color}]{symbol} Success:[/bold {success_color}] {exp.success}\n"
+            f"[bold cyan]Rating:[/bold cyan] {exp.rating}/10\n"
+            f"[bold yellow]Lessons:[/bold yellow] {', '.join(exp.lessons) if exp.lessons else 'None'}",
+            title="[bold blue]Self-Reflection[/bold blue]",
+            border_style="blue"
+        ))
+
         with console.status("[bold blue]Agent is learning from experience...") as status:
             agent.learn(exp)
         

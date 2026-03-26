@@ -30,8 +30,16 @@ class PythonREPLTool(BaseTool):
             with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
                 # Exec block with its own globals/locals to prevent scope contamination
                 # We provide a restricted set of safe builtins
+                import pandas as pd
+                import numpy as np
+                import json
+                
                 safe_globals = {
+                    "pd": pd,
+                    "np": np,
+                    "json": json,
                     "__builtins__": {
+                        "__import__": __import__,
                         "len": len,
                         "range": range,
                         "str": str,
@@ -54,6 +62,7 @@ class PythonREPLTool(BaseTool):
                         "filter": filter,
                         "any": any,
                         "all": all,
+                        "getattr": getattr,
                     }
                 }
                 exec(code, safe_globals)

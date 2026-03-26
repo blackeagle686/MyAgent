@@ -9,6 +9,7 @@ from ..tools import (
     RagSearchTool, FileReadTool, FileWriteTool, ListDirTool, FastAnswerTool,
     DataAnalysisTool
 )
+from .agent_reflection import Reflector
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ class BrainAgent:
         self.actor = AgentActor(registry=self.registry)
         self.thinker = Thinker()
         self.task_manager = TaskManager()
+        self.reflector = Reflector()
 
     def think(self, user_prompt: str, trajectory: list = None) -> str:
         """
@@ -65,7 +67,7 @@ class BrainAgent:
         {context}
         
         Past Experiences (Lessons Learned):
-        {exp_context}
+        {exp_text}
         
         User Request:
         {user_prompt}
@@ -73,12 +75,20 @@ class BrainAgent:
         Current Trajectory:
         {trajectory_str}
         
+        CRITICAL: Review the "Past Experiences" carefully. If you made mistakes in similar tasks before, DO NOT REPEAT THEM. Use the "Lessons Learned" to choose better tools or strategies.
+        
         Decide the best next step by providing your reasoning.
         If you need to use a tool, return a JSON block anywhere in your response:
         ```json
         {{"tool": "tool_name", "kwargs": {{"arg_name": "value"}}}}
         ```
-        If you have successfully completed the task, output your final answer starting with "FINAL_ANSWER: ".
+        
+        STRICT EVIDENCE POLICY: 
+        1. Never hallucinate results. If a tool doesn't return a value, report the failure.
+        2. Before saying "I have completed the task", you MUST cite specific evidence (numbers, metrics, or generated filenames) from the tool observations.
+        3. If you claim to have trained a model, you MUST report its performance metrics (e.g., RMSE or Accuracy).
+        
+        If you have successfully completed the task with evidence, output your final answer starting with "FINAL_ANSWER: ".
         """
         return client.generate(user_prompt=user_prompt, sys_prompt=prompt, temperature=0.2)
 

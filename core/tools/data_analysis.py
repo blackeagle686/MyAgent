@@ -4,7 +4,12 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
+import io
 from typing import Any, Dict, List, Optional, Union
+from rich.console import Console
+from rich.table import Table
+from rich.panel import Panel
+from rich.text import Text
 from .base import BaseTool
 from .code_security_decorator import safe_execution, timeout, audit_log
 
@@ -61,22 +66,29 @@ class DataAnalysisTool(BaseTool):
     @safe_execution
     @timeout(seconds=60)
     @audit_log
-    def execute(self, task: str, file_path: str, **kwargs) -> str:
+    def execute(self, task: str = "full_pipeline", file_path: str = None, **kwargs) -> str:
         try:
+            # Handle parameter aliases/missing values
+            fp = file_path or kwargs.get("file_path") or kwargs.get("path")
+            if not fp:
+                return "Error: file_path (or 'path') is required for data_analysis."
+            
+            t = task if task and task != "full_pipeline" else kwargs.get("task", "full_pipeline")
+
             # 1. Loading Data
-            df = self._load_data(file_path, kwargs.get("connection_string"), kwargs.get("query"))
+            df = self._load_data(fp, kwargs.get("connection_string"), kwargs.get("query"))
             results = {"steps": []}
 
             # 2. Cleaning Data
             df, clean_info = self._clean_data(df)
             results["steps"].append({"name": "Cleaning", "info": clean_info})
 
-            if task == "eda" or task == "full_pipeline":
+            if t == "eda" or t == "full_pipeline":
                 # 3. EDA & Visualization
                 eda_results = self._eda(df)
                 results["steps"].append({"name": "EDA", "data": eda_results})
 
-            if task == "train_model" or task == "full_pipeline":
+            if t == "train_model" or t == "full_pipeline":
                 target = kwargs.get("target_column")
                 ml_task = kwargs.get("ml_task")
                 
@@ -87,6 +99,18 @@ class DataAnalysisTool(BaseTool):
                 ml_results = self._ml_pipeline(df, target, ml_task)
                 results["steps"].append({"name": "ML_Pipeline", "data": ml_results})
 
+            # Hardened Evidence Summary
+            summary_parts = [f"Rows: {df.shape[0]}", f"Cols: {df.shape[1]}"]
+            for step in results["steps"]:
+                if step["name"] == "EDA":
+                    summary_parts.append("EDA: Generated Heatmap")
+                if step["name"] == "ML_Pipeline":
+                    metrics = step["data"]
+                    val = metrics.get("accuracy") or metrics.get("rmse") or metrics.get("silhouette_score")
+                    summary_parts.append(f"ML: {metrics['task']} (Score: {val:.4f})")
+
+            results["summary_evidence"] = " | ".join(summary_parts)
+            
             return json.dumps(results, indent=2, default=str)
 
         except Exception as e:
@@ -132,15 +156,62 @@ class DataAnalysisTool(BaseTool):
         # Create a sample visualization (correlation heatmap if enough numeric columns)
         numeric_df = df.select_dtypes(include=[np.number])
         viz_json = None
+        viz_summary = "None"
         if len(numeric_df.columns) >= 2:
             corr = numeric_df.corr()
             fig = px.imshow(corr, text_auto=True, title="Correlation Heatmap")
-            viz_json = fig.to_dict() # Returning as dict (shapes on json type)
+            viz_json = fig.to_dict()
+            viz_summary = f"Heatmap [{len(numeric_df.columns)}x{len(numeric_df.columns)} matrix]"
 
         return {
             "summary_statistics": summary,
-            "visualization": viz_json
+            "visualization": viz_json,
+            "visualization_summary": viz_summary,
+            "terminal_viz": self._generate_terminal_eda(df)
         }
+
+    def _generate_terminal_eda(self, df: pd.DataFrame) -> str:
+        """Generates a combined terminal visualization of the data."""
+        output = io.StringIO()
+        console = Console(file=output, force_terminal=True, width=100)
+        
+        # 1. Heatmap
+        numeric_df = df.select_dtypes(include=[np.number])
+        if not numeric_df.empty:
+            corr = numeric_df.corr()
+            table = Table(title="Correlation Heatmap (Terminal)", show_header=True, header_style="bold magenta")
+            table.add_column("Feature")
+            for col in corr.columns:
+                table.add_column(col[:10])
+                
+            for i, row in corr.iterrows():
+                row_vals = [i]
+                for val in row:
+                    color = "red" if val < -0.5 else "blue" if val > 0.5 else "white"
+                    row_vals.append(Text(f"{val:.2f}", style=color))
+                table.add_row(*row_vals)
+            console.print(table)
+            console.print("\n")
+            
+            # 2. Column Stats
+            stats_table = Table(title="Numeric Feature Distributions", show_header=True, header_style="bold cyan")
+            stats_table.add_column("Feature")
+            stats_table.add_column("Mean")
+            stats_table.add_column("Std")
+            stats_table.add_column("Min")
+            stats_table.add_column("Max")
+            
+            for col in numeric_df.columns:
+                stats_table.add_row(
+                    col,
+                    f"{numeric_df[col].mean():.2f}",
+                    f"{numeric_df[col].std():.2f}",
+                    f"{numeric_df[col].min():.2f}",
+                    f"{numeric_df[col].max():.2f}"
+                )
+            console.print(stats_table)
+            
+        return output.getvalue()
 
     def _ml_pipeline(self, df: pd.DataFrame, target: str, ml_task: str) -> dict:
         from sklearn.model_selection import train_test_split
@@ -196,5 +267,6 @@ class DataAnalysisTool(BaseTool):
         return {
             "task": ml_task,
             metric_name: score,
-            "visualization": fig.to_dict()
+            "visualization": fig.to_dict(),
+            "visualization_summary": f"Bar Chart [Feature Importance for {len(importances)} features]"
         }
