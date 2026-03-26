@@ -84,9 +84,11 @@ class BrainAgent:
         ```
         
         STRICT EVIDENCE POLICY: 
-        1. Never hallucinate results. If a tool doesn't return a value, report the failure.
+        1. NEVER hallucinate tool results or data contents. If you haven't run a tool to see a file's content, you do not know it.
         2. Before saying "I have completed the task", you MUST cite specific evidence (numbers, metrics, or generated filenames) from the tool observations.
-        3. If you claim to have trained a model, you MUST report its performance metrics (e.g., RMSE or Accuracy).
+        3. For any data analysis or EDA task, you MUST use the 'data_analysis' tool. Do NOT use 'python_repl' for plotting or basic stats.
+        4. If 'python_repl' fails with SyntaxError, do not guess the data; use 'read_file' or 'data_analysis' to get real values.
+        5. If you claim to have trained a model, you MUST report its performance metrics.
         
         If you have successfully completed the task with evidence, output your final answer starting with "FINAL_ANSWER: ".
         """

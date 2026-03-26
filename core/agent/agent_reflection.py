@@ -3,26 +3,28 @@ import logging
 from typing import Optional
 from .agent_memory import Experience
 from ..services.llm_service import client
+from ..utils.json_utils import parse_robust_json
 
 logger = logging.getLogger(__name__)
 
 REFLECTION_SYS_PROMPT = """
 You are the "Self-Reflection Module" of an autonomous AI agent. 
-Your job is to analyze the agent's performance after it completes a task.
+Analyze the task trajectory and final answer critically.
 
-Analyze the provided task trajectory (steps taken, tools used, observations) and the final answer.
-Be critical. Identify where the agent was inefficient, when it made mistakes, or if it failed the user.
+CRITICAL RULES:
+1. NO HALLUCINATION: If the final answer contains data (numbers, rows, columns) that NEVER appeared in the trajectory observations, set success=False and rating=1.
+2. NO DEFEATISM: If the agent says "I could not complete the task" or "I was unable to...", set success=False and rating=2, UNLESS the trajectory shows it exhausted ALL tools (including reading the file and trying code).
+3. EVIDENCE CHECK: For a 10/10 rating, the agent MUST have produced verifiable evidence (e.g., metrics, charts, file contents) and cited them.
+4. LESSONS: Provide concrete, actionable lessons to avoid repeating mistakes (e.g., "Use head before pandas", "Check directory first").
 
-Return your analysis in EXACTLY this JSON format:
+Return EXACT JSON:
 {
     "success": true/false,
     "rating": 1-10,
-    "mistakes": ["mistake 1", "mistake 2"],
-    "lessons": ["actionable lesson 1", "actionable lesson 2"],
-    "meta_summary": "Short summary of performance"
+    "mistakes": ["list of failures"],
+    "lessons": ["specific advice for next time"],
+    "meta_summary": "one line summary"
 }
-
-A "lesson" should be specific advice for the agent's future self to avoid repeating a mistake or to improve efficiency.
 """
 
 class Reflector:
@@ -54,19 +56,12 @@ class Reflector:
                 temperature=0.1 # Low temperature for consistent analysis
             )
             
-            # Extract JSON from response (handling potential markdown wrapping)
-            json_str = response.strip()
-            if "```json" in json_str:
-                json_str = json_str.split("```json")[1].split("```")[0].strip()
-            elif "```" in json_str:
-                json_str = json_str.split("```")[1].split("```")[0].strip()
-                
-            data = json.loads(json_str)
+            data = parse_robust_json(response, fallback={})
             
-            exp.success = data.get("success", True)
-            exp.rating = data.get("rating", 10)
-            exp.mistakes = data.get("mistakes", [])
-            exp.lessons = data.get("lessons", [])
+            exp.success = data.get("success", False)
+            exp.rating = data.get("rating", 1)
+            exp.mistakes = data.get("mistakes", ["Reflection failed or was too lenient"])
+            exp.lessons = data.get("lessons", ["Always execute tools to verify claims"])
             
             logger.info(f"Reflection completed. Success: {exp.success}, Rating: {exp.rating}/10")
             

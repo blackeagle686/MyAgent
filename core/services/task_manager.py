@@ -63,6 +63,11 @@ class TaskManager:
             for task in tasks:
                 self._tasks[task.id] = task
 
+    def clear(self) -> None:
+        """Clears all tasks from the registry."""
+        with self._lock:
+            self._tasks.clear()
+
     # Querying
     def get(self, task_id: str) -> Optional[Task]:
         return self._tasks.get(task_id)
@@ -117,6 +122,23 @@ class TaskManager:
         if task := self._tasks.get(task_id):
             for k, v in kwargs.items():
                 setattr(task, k, v)
+
+    # History and Progress
+    def get_history_summary(self) -> str:
+        """Returns a compact string of all completed actions and results."""
+        with self._lock:
+            done = [t for t in self._tasks.values() if t.status == TaskStatus.DONE]
+            if not done:
+                return "No tasks completed yet."
+            return "\n".join([f"- [COMPLETED] {t.prompt} -> Result: {str(t.result)[:100]}..." for t in done])
+
+    def get_failed_summary(self) -> str:
+        """Returns a summary of failed tasks and their errors."""
+        with self._lock:
+            failed = [t for t in self._tasks.values() if t.status == TaskStatus.FAILED]
+            if not failed:
+                return "No failures recorded."
+            return "\n".join([f"- [FAILED] {t.prompt} -> Error: {t.result}" for t in failed])
 
     # Summary
     def summary(self) -> Dict[str, int]:

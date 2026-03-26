@@ -14,49 +14,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from ..services.llm_service import client
 from ..services.task_manager import Task, TaskManager
+from ..utils.json_utils import parse_robust_json
 
 logger = logging.getLogger(__name__)
-
-
-# ---------------------------------------------------------------------------
-# Shared helpers
-# ---------------------------------------------------------------------------
-
-def _parse_json(text: str, fallback: Any) -> Any:
-    """Parse JSON from *text*, returning *fallback* on failure.
-    Handles markdown code blocks if present.
-    """
-    clean_text = text.strip()
-    if clean_text.startswith("```"):
-        # Find the first { or [ and last } or ]
-        start_idx = -1
-        for char in ['{', '[']:
-            idx = clean_text.find(char)
-            if idx != -1 and (start_idx == -1 or idx < start_idx):
-                start_idx = idx
-        
-        end_idx = -1
-        for char in ['}', ']']:
-            idx = clean_text.rfind(char)
-            if idx != -1 and (end_idx == -1 or idx > end_idx):
-                end_idx = idx
-        
-        if start_idx != -1 and end_idx != -1:
-            clean_text = clean_text[start_idx:end_idx+1]
-
-    try:
-        return json.loads(clean_text)
-    except Exception as exc:
-        # One last ditch effort: look for any JSON block
-        try:
-            import re
-            match = re.search(r'(\{.*\}|\[.*\])', text, re.DOTALL)
-            if match:
-                return json.loads(match.group(0))
-        except:
-            pass
-        logger.error("JSON parse error: %s", exc)
-        return fallback
 
 
 # ---------------------------------------------------------------------------
@@ -65,12 +25,15 @@ def _parse_json(text: str, fallback: Any) -> Any:
 
 _ANALYSIS_PROMPT = """\
 You are an expert systems analyst. Analyze the user's request and provide a technical strategy.
-Return your response ONLY as a plain text block with these specific fields:
+
+CRITICAL: Do NOT invent, simulate, or assume any tool outputs. 
+You do NOT know the content of any file unless it was provided in the history.
+STRICTLY follow these fields:
 
 problem_type: (e.g., Coding, System, Research)
 difficulty: (1-10)
 needs_tools: (Yes/No)
-strategy: (Detailed step-by-step approach)
+strategy: (Detailed step-by-step approach. DO NOT include predicted tool outputs.)
 
 Available tools for context:
 {tool_info}
@@ -78,9 +41,13 @@ Available tools for context:
 
 _TASK_DECOMP_PROMPT = """\
 You are a project manager. Based on the analysis provided, decompose the project into a list of atomic, sequential tasks.
-Each task must be actionable by a single tool or a simple code block.
 
-Return ONLY a valid JSON array of objects. DO NOT include markdown blocks, DO NOT include prose.
+STRICT RULES:
+1. Return ONLY a valid JSON array of objects.
+2. Each task must be a single tool call or a simple logical step.
+3. DO NOT include predicted observations.
+4. DO NOT include prose or markdown fences.
+
 Example Format:
 [
   {"task": "Read requirements.txt", "priority": 5},
@@ -130,7 +97,7 @@ class Thinker:
     def _decompose(self, analysis: str, model_override: Optional[str] = None) -> List[Task]:
         raw = self.model.generate(user_prompt=analysis, sys_prompt=_TASK_DECOMP_PROMPT, model=model_override)
         logger.info("DECOMPOSE RAW: %s", raw)
-        items = _parse_json(raw, fallback=[])
+        items = parse_robust_json(raw, fallback=[])
         return [
             Task(prompt=item["task"], priority=item["priority"])
             for item in items
@@ -145,18 +112,25 @@ class Thinker:
 _PLANNER_SYSTEM = """\
 You are an autonomous AI planner. Decide the next best action for the current task.
 
+CRITICAL RULES:
+1. PROGRESS AWARENESS: Review the "GLOBAL HISTORY" carefully. If a fact was already established (e.g. file exists), DO NOT repeat the check.
+2. NO REPETITION: Never call the same tool with the same arguments if the previous result was conclusive or an error.
+3. ERROR RECOVERY: If a tool failed (e.g. SyntaxError), your next action MUST be to FIX the error (e.g. rewrite code) or change strategy.
+4. STRATEGIC SHIFT: If you realize the current set of tasks is wrong or a dead-end, use the 'update_plan' action.
+
 Possible actions:
   execute_tool      — run a tool to make progress
   finish_task       — the task is complete
   retry             — retry the last step
+  update_plan       — current tasks are invalid; request a re-think
   need_more_thinking — the task needs further analysis
 
-Return STRICT JSON — no prose, no markdown fences:
+Return STRICT JSON:
 {
   "action":     "<action>",
   "tool":       "<tool name or null>",
   "tool_args":  {"arg_name": "value"},
-  "reasoning":  "<brief explanation>",
+  "reasoning":  "<brief explanation of why this step is PROGRESS, not repetition>",
   "confidence": <0.0 – 1.0>
 }
 """
@@ -196,13 +170,13 @@ class Planner:
     # Public API
     # ------------------------------------------------------------------
 
-    def plan_next(self) -> Optional[Tuple[Task, Dict[str, Any]]]:
+    def plan_next(self, hint: Optional[str] = None) -> Optional[Tuple[Task, Dict[str, Any]]]:
         """Pop the next task and return (task, decision), or None if queue empty."""
         task = self.task_manager.next_task()
         if task is None:
             return None
 
-        decision = self._plan(task)
+        decision = self._plan(task, hint=hint)
         self._apply_decision(task, decision)
         return task, decision
 
@@ -222,17 +196,22 @@ class Planner:
         if self.user_context:
             ctx += f"Original User Goal: {self.user_context}\n\n"
         
+        ctx += "--- GLOBAL HISTORY (What we already did) ---\n"
+        ctx += self.task_manager.get_history_summary() + "\n"
+        ctx += "\n--- PREVIOUS FAILURES (Avoid these) ---\n"
+        ctx += self.task_manager.get_failed_summary() + "\n\n"
+
         ctx += (
-            f"Current sub-task:\n{task.prompt}\n\n"
-            f"Status:        {task.status}\n"
-            f"Previous result: {task.result}\n"
-            f"Assigned tool: {task.tool}\n\n"
+            f"Current sub-task: {task.prompt}\n"
+            f"Previous result for THIS task: {task.result}\n"
             f"Available tools:\n{self._tool_descriptions()}"
         )
         return ctx
 
-    def _plan(self, task: Task) -> Dict[str, Any]:
+    def _plan(self, task: Task, hint: Optional[str] = None) -> Dict[str, Any]:
         context = self._build_context(task)
+        if hint:
+            context = f"!!! WARNING/HINT !!!\n{hint}\n\n" + context
         
         # Determine which model to use
         target_model = None
@@ -251,7 +230,7 @@ class Planner:
             return _PLAN_FALLBACK
         
         logger.info("PLAN RAW: %s", raw)
-        return _parse_json(raw, fallback=_PLAN_FALLBACK)
+        return parse_robust_json(raw, fallback=_PLAN_FALLBACK)
 
     @staticmethod
     def _apply_decision(task: Task, decision: Dict[str, Any]) -> None:

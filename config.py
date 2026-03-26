@@ -4,7 +4,7 @@ from dataclasses import dataclass
 class Config:
     # OpenRouter API config
     # api_key: str = "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"
-    api_key: str = "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"
+    api_key: str = "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"
     base_url: str = "https://openrouter.ai/api/v1"
     
     # LLMs  
