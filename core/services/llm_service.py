@@ -8,6 +8,7 @@ import time
 from typing import Optional, Any, Dict, List
 from sentence_transformers import SentenceTransformer
 from core.services.local_llm_service import local_llm_service
+from core.services.semantic_cache import semantic_cache
 
 # Attempt to import Rust accelerator
 try:
@@ -86,6 +87,32 @@ class LLMClient:
         if remaining and int(remaining) < 5:
             logger.warning(f"Rate limit low: {remaining} requests remaining.")
         
+    def _prune_messages(self, messages: List[Dict[str, str]], max_budget: int = 10000) -> List[Dict[str, str]]:
+        """
+        Prune messages to fit within a token budget. 
+        Keeps the system prompt and the most recent messages.
+        """
+        if not messages:
+            return []
+        
+        system_msg = messages[0] if messages[0]["role"] == "system" else None
+        other_msgs = messages[1:] if system_msg else messages
+        
+        current_tokens = sum(self.count_tokens(m["content"]) for m in messages)
+        if current_tokens <= max_budget:
+            return messages
+            
+        logger.info(f"Pruning messages: {current_tokens} tokens exceeds budget {max_budget}")
+        
+        # Keep pruning from the oldest (start of other_msgs) until it fits
+        while other_msgs and sum(self.count_tokens(m["content"]) for m in ([system_msg] + other_msgs if system_msg else other_msgs)) > max_budget:
+            if len(other_msgs) > 1:
+                other_msgs.pop(0) # Remove oldest
+            else:
+                break # Keep at least one message besides system
+                
+        return [system_msg] + other_msgs if system_msg else other_msgs
+
     def generate(self, user_prompt: str, memory=None,
                 sys_prompt: Optional[str] = None,
                 temperature: float = 0.3,
@@ -120,14 +147,23 @@ class LLMClient:
         try:
             target_model = model or self.model
             
-            # 1. Caching
+            # 1. Strict MD5 Caching
             cache_key = self._get_cache_key(f"{user_prompt}:{target_model}:{sys_prompt}:{temperature}")
             cached_response = self._check_cache(cache_key)
             if cached_response:
-                logger.info("Using cached LLM response")
+                logger.info("Using MD5 cached LLM response")
                 return cached_response
 
-            # 2. API Call with Retry Logic
+            # 2. Semantic Caching (Broader match)
+            semantic_cached_response = semantic_cache.get(user_prompt, target_model)
+            if semantic_cached_response:
+                logger.info("Using semantic cached LLM response")
+                return semantic_cached_response
+
+            # 3. Message Pruning
+            messages = self._prune_messages(messages)
+
+            # 4. API Call with Retry Logic
             retries = 0
             while retries <= Config.max_retries:
                 try:
@@ -135,16 +171,18 @@ class LLMClient:
                         model=target_model,
                         temperature=temperature,
                         max_tokens=max_tokens,
-                        messages=messages
+                        messages=messages,
+                        extra_headers={
+                            "HTTP-Referer": "https://github.com/blackeagle686/MyAgent", # Use project identifier
+                            "X-Title": "MyAgent-Framework",
+                        }
                     )
-                    
-                    # Capture headers if available (OpenAI client might require raw response)
-                    # For simplicity, we assume standard behavior or fallback to standard logging
                     
                     response = completion.choices[0].message.content
                     
-                    # Store response in cache
+                    # Update both caches
                     self._update_cache(cache_key, response)
+                    semantic_cache.set(user_prompt, response, target_model)
 
                     # Store response in memory
                     memory.append({"role":"user","content":user_prompt})

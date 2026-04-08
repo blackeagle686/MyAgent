@@ -184,24 +184,40 @@ class MemoryStore:
 
     def retrieve_context(self, query: str, top_k: int = 3, max_tokens: int = 2000) -> str:
         """
-        Retrieves context and ensures it fits within token limits using 
-        the Rust tokenizer for exact counting.
+        Retrieves context and ensures it fits within token limits.
+        Prioritizes summaries first to maximize the amount of relevant 
+        information included in the budget.
         """
         memories = self.retrieve(query, top_k)
         context_parts = []
         total_tokens = 0
         
+        # Phase 1: Try to fit all summaries
         for m in memories:
-            text = m.get("summary") or m.get("content", "")
-            # Use Rust tokenizer if available
-            tokens = self.llm.count_tokens(text)
+            summary = m.get("summary")
+            if not summary: continue
+            
+            summary_text = f"[Summary]: {summary}"
+            tokens = self.llm.count_tokens(summary_text)
             if total_tokens + tokens <= max_tokens:
-                context_parts.append(text)
+                context_parts.append(summary_text)
+                total_tokens += tokens
+            
+        # Phase 2: If budget remains, add raw content for the top matches
+        for m in memories:
+            content = m.get("content")
+            if not content: continue
+            
+            content_text = f"[Raw Detail]: {content}"
+            tokens = self.llm.count_tokens(content_text)
+            if total_tokens + tokens <= max_tokens:
+                context_parts.append(content_text)
                 total_tokens += tokens
             else:
+                # Potentially truncate or stop
                 break
                 
-        return "\n".join(context_parts)
+        return "\n\n".join(context_parts)
 
     # Internal
     def _link_worker(self) -> None:

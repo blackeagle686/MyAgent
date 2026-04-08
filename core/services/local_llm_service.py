@@ -37,25 +37,23 @@ class LocalLLMService:
         logger.info("LocalLLMService initialized (models not yet loaded)")
 
     def _load_thinker(self):
-        """Loads Qwen/Qwen2.5-3B-Instruct with 8-bit quantization"""
+        """Loads Qwen/Qwen2.5-3B-Instruct-GGUF using llama-cpp-python"""
         if self.thinker_model is not None:
             return
 
         logger.info(f"Loading thinker model: {Config.local_thinker_model}")
         
         try:
-            bnb_config = BitsAndBytesConfig(
-                load_in_8bit=True,
-                llm_int8_threshold=6.0,
-                llm_int8_has_fp16_weight=False,
+            model_path = hf_hub_download(
+                repo_id=Config.local_thinker_model,
+                filename="qwen2.5-3b-instruct-q5_k_m.gguf" # Q5_K_M is the sweet spot
             )
             
-            self.thinker_tokenizer = AutoTokenizer.from_pretrained(Config.local_thinker_model)
-            self.thinker_model = AutoModelForCausalLM.from_pretrained(
-                Config.local_thinker_model,
-                quantization_config=bnb_config,
-                device_map="auto",
-                trust_remote_code=True
+            self.thinker_model = Llama(
+                model_path=model_path,
+                n_ctx=8192,
+                n_threads=4, # Ideal for most CPUs
+                verbose=False
             )
             logger.info("Thinker model loaded successfully")
         except Exception as e:
@@ -105,24 +103,15 @@ class LocalLLMService:
     def generate_thinker(self, prompt: str, system_prompt: str = "You are a helpful assistant.", max_tokens: int = 512) -> str:
         self._load_thinker()
         
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": prompt}
-        ]
-        text = self.thinker_tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        model_inputs = self.thinker_tokenizer([text], return_tensors="pt").to(self.thinker_model.device)
-
-        generated_ids = self.thinker_model.generate(
-            model_inputs.input_ids,
-            max_new_tokens=max_tokens,
-            do_sample=True,
+        output = self.thinker_model.create_chat_completion(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=max_tokens,
             temperature=0.7
         )
-        generated_ids = [
-            output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
-        ]
-
-        return self.thinker_tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        return output["choices"][0]["message"]["content"]
 
     def generate_planner(self, prompt: str, system_prompt: str = "You are a coding expert.", max_tokens: int = 1024) -> str:
         self._load_planner()

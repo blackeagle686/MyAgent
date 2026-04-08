@@ -22,7 +22,7 @@ class Config:
     vdb_model: str = "all-MiniLM-L6-v2"
     
     # Local LLMs
-    local_thinker_model: str = "Qwen/Qwen2.5-3B-Instruct"
+    local_thinker_model: str = "Qwen/Qwen2.5-3B-Instruct-GGUF"
     local_planner_model: str = "Qwen/Qwen2.5-Coder-3B-Instruct-GGUF"
     local_embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     
@@ -35,6 +35,7 @@ class Config:
     
     # Rate Limit & Caching
     enable_cache: bool = True
+    semantic_cache_threshold: float = 0.92
     max_retries: int = 3
     backoff_factor: float = 2.0
     
